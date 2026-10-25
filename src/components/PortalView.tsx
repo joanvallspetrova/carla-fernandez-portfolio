@@ -25,6 +25,7 @@ import {
   FileText,
   LogOut,
   Crop,
+  Video,
 } from 'lucide-react';
 
 interface PortalViewProps {
@@ -39,6 +40,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
   const [activeTab, setActiveTab] = useState<'book' | 'digitals' | 'stats' | 'compcard'>('book');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [cropQueue, setCropQueue] = useState<CropQueueItem[] | null>(null);
   const [statusBanner, setStatusBanner] = useState<{
@@ -164,7 +166,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
       aspectRatioId: string;
     }[]
   ) => {
-    // Clean up any blob object URLs
     if (cropQueue) {
       cropQueue.forEach((item) => {
         if (item.srcUrl.startsWith('blob:')) {
@@ -262,6 +263,132 @@ export default function PortalView({ initialData }: PortalViewProps) {
       });
     }
     setCropQueue(null);
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.includes(',') ? result.split(',')[1] : result;
+        resolve(base64);
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingVideo(true);
+    setStatusBanner({
+      type: 'info',
+      text: `Subiendo vídeo "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`,
+    });
+
+    try {
+      const cfgRes = await fetch('/api/upload-video', {
+        headers: password ? { 'x-portal-password': password } : undefined,
+      });
+      if (!cfgRes.ok) {
+        throw new Error('No autorizado para subir vídeo');
+      }
+      const cfg = await cfgRes.json();
+
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+      const safeExt = ['mp4', 'mov', 'webm', 'm4v'].includes(ext) ? ext : 'mp4';
+      const filename = `digital-video-${Date.now()}.${safeExt}`;
+
+      let videoUrl = `/photos/${filename}`;
+
+      // Upload directly to GitHub API from browser so files > 4.5MB work on Vercel
+      if (cfg.token) {
+        const base64Content = await fileToBase64(file);
+        const repoPath = `public/photos/${filename}`;
+        const ghRes = await fetch(
+          `https://api.github.com/repos/${cfg.repo}/contents/${repoPath}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${cfg.token}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: `Upload digital video ${filename} via Portal`,
+              content: base64Content,
+              branch: cfg.branch || 'main',
+            }),
+          }
+        );
+
+        if (!ghRes.ok) {
+          const errText = await ghRes.text();
+          throw new Error(`Error subiendo vídeo a GitHub (${ghRes.status}): ${errText}`);
+        }
+
+        if (cfg.isVercel) {
+          videoUrl = `https://raw.githubusercontent.com/${cfg.repo}/${
+            cfg.branch || 'main'
+          }/${repoPath}`;
+        }
+      }
+
+      // If running locally, also save to local public/photos folder
+      if (!cfg.isVercel) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const localRes = await fetch('/api/upload-video', {
+          method: 'POST',
+          headers: password ? { 'x-portal-password': password } : undefined,
+          body: formData,
+        });
+        if (localRes.ok) {
+          const localJson = await localRes.json();
+          videoUrl = localJson.url;
+        }
+      }
+
+      updateData((prev) => ({
+        ...prev,
+        digitalVideo: {
+          src: videoUrl,
+          visible: true,
+          title: prev.digitalVideo?.title || '360° Natural Light Digitals',
+        },
+      }));
+
+      setStatusBanner({
+        type: 'success',
+        text: '¡Vídeo subido correctamente! Pulsa "Guardar Cambios" arriba para publicarlo.',
+      });
+    } catch (err: unknown) {
+      setStatusBanner({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Error al subir el vídeo',
+      });
+    } finally {
+      setIsUploadingVideo(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteVideo = () => {
+    if (!window.confirm('¿Seguro que quieres eliminar este vídeo del portfolio?')) return;
+    updateData((prev) => ({
+      ...prev,
+      digitalVideo: {
+        ...prev.digitalVideo,
+        src: '',
+        visible: false,
+      },
+    }));
+    setStatusBanner({
+      type: 'info',
+      text: 'Vídeo eliminado. Pulsa "Guardar Cambios" arriba para aplicar el cambio en la web.',
+    });
   };
 
   const movePhoto = (photoId: string, direction: 'up' | 'down') => {
@@ -760,34 +887,131 @@ export default function PortalView({ initialData }: PortalViewProps) {
               </label>
             </div>
 
-            {/* Video Digitals Toggle */}
-            <div className="bg-white border border-neutral-200 p-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-wider">
-                  Vídeo Digital (Movimiento y Proporciones 360°)
-                </span>
-                <p className="text-xs text-neutral-500">
-                  Mostrar el vídeo corto al final de la sección de Digitals
-                </p>
+            {/* Video Digitals Management Card (Same functionality as Photos: Preview, Replace/Upload, Hide/Show, Delete) */}
+            <div className="bg-white border border-neutral-200 p-5 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 bg-neutral-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <Video className="w-4 h-4 text-[#111111]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.14em]">
+                      Vídeo Digital (Movimiento y Proporciones 360°)
+                    </h3>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Puedes reemplazar el vídeo por uno nuevo, ocultarlo temporalmente o eliminarlo
+                      si no quieres mostrar ningún vídeo.
+                    </p>
+                  </div>
+                </div>
+
+                <label className="cursor-pointer inline-flex items-center justify-center gap-2 border border-[#111111] bg-white text-[#111111] px-4 py-2.5 text-xs tracking-[0.15em] uppercase font-medium hover:bg-[#111111] hover:text-white transition-colors shrink-0">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>
+                    {isUploadingVideo
+                      ? 'Subiendo Vídeo...'
+                      : data.digitalVideo?.src
+                      ? 'Reemplazar Vídeo'
+                      : 'Subir Vídeo Digital'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/webm,video/*"
+                    disabled={isUploadingVideo}
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <button
-                onClick={() =>
-                  updateData((prev) => ({
-                    ...prev,
-                    digitalVideo: {
-                      ...prev.digitalVideo,
-                      visible: !prev.digitalVideo.visible,
-                    },
-                  }))
-                }
-                className={`px-4 py-2 text-xs tracking-wider uppercase font-medium border ${
-                  data.digitalVideo?.visible
-                    ? 'bg-[#111111] text-white border-[#111111]'
-                    : 'bg-white text-neutral-600 border-neutral-300'
-                }`}
-              >
-                {data.digitalVideo?.visible ? 'Vídeo Visible' : 'Vídeo Oculto'}
-              </button>
+
+              {data.digitalVideo && data.digitalVideo.src ? (
+                <div
+                  className={`border border-neutral-200 p-4 grid grid-cols-1 md:grid-cols-12 gap-6 items-center ${
+                    !data.digitalVideo.visible ? 'opacity-50' : ''
+                  }`}
+                >
+                  <div className="md:col-span-4 bg-neutral-900 overflow-hidden max-w-[240px] mx-auto w-full">
+                    <video
+                      key={data.digitalVideo.src}
+                      src={data.digitalVideo.src}
+                      controls
+                      playsInline
+                      muted
+                      preload="metadata"
+                      className="w-full h-auto max-h-[300px] object-contain block"
+                    />
+                  </div>
+
+                  <div className="md:col-span-8 space-y-4">
+                    <div>
+                      <label className="block text-[10px] tracking-widest uppercase text-neutral-500 mb-1.5">
+                        Título del Vídeo
+                      </label>
+                      <input
+                        type="text"
+                        value={data.digitalVideo.title || ''}
+                        onChange={(e) =>
+                          updateData((prev) => ({
+                            ...prev,
+                            digitalVideo: {
+                              ...prev.digitalVideo,
+                              title: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="360° Natural Light Digitals"
+                        className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateData((prev) => ({
+                            ...prev,
+                            digitalVideo: {
+                              ...prev.digitalVideo,
+                              visible: !prev.digitalVideo.visible,
+                            },
+                          }))
+                        }
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-xs tracking-wider uppercase font-medium border ${
+                          data.digitalVideo.visible
+                            ? 'bg-[#111111] text-white border-[#111111]'
+                            : 'bg-white text-neutral-600 border-neutral-300 hover:border-[#111111]'
+                        }`}
+                      >
+                        {data.digitalVideo.visible ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Vídeo Visible</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5" />
+                            <span>Vídeo Oculto</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleDeleteVideo}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs tracking-wider uppercase font-medium text-red-600 border border-neutral-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Eliminar Vídeo</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="border border-dashed border-neutral-300 bg-[#FAFAFA] p-6 text-center text-xs text-neutral-500">
+                  Actualmente no hay ningún vídeo en la sección de Digitals. Pulsa{' '}
+                  <strong>Subir Vídeo Digital</strong> si quieres añadir uno.
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
