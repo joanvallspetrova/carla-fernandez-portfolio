@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:43:48.699Z",
+  "updatedAt": "2026-10-25T22:44:12.653Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -70,8 +70,8 @@
     },
     {
       "id": "book-03",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963306166-urban-tailoring.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963306166-urban-tailoring.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968249824-urban-tailoring.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968249824-urban-tailoring.jpg",
       "category": "book",
       "title": "Urban Tailoring",
       "visible": true,
@@ -80,7 +80,7 @@
       "aspectRatio": "portrait",
       "order": 2,
       "width": 954,
-      "height": 1272
+      "height": 1193
     },
     {
       "id": "book-04",
