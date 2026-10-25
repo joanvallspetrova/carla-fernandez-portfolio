@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:48:40.680Z",
+  "updatedAt": "2026-10-25T22:49:13.355Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -42,8 +42,8 @@
   "photos": [
     {
       "id": "book-01",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968478681-beauty-close-up.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968478681-beauty-close-up.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968550082-beauty-close-up.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968550082-beauty-close-up.jpg",
       "category": "book",
       "title": "Beauty Close-up",
       "visible": true,
@@ -52,7 +52,7 @@
       "aspectRatio": "portrait",
       "order": 1,
       "width": 1134,
-      "height": 1512
+      "height": 1418
     },
     {
       "id": "book-02",
