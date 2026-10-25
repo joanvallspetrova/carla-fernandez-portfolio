@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { PortfolioData, PhotoItem } from '@/types/portfolio';
 import { generateCompCardPdf } from '@/lib/compCardPdf';
+import PhotoCropModal, { CropQueueItem } from '@/components/PhotoCropModal';
 import {
   Upload,
   Save,
@@ -23,6 +24,7 @@ import {
   Ruler,
   FileText,
   LogOut,
+  Crop,
 } from 'lucide-react';
 
 interface PortalViewProps {
@@ -38,6 +40,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [cropQueue, setCropQueue] = useState<CropQueueItem[] | null>(null);
   const [statusBanner, setStatusBanner] = useState<{
     type: 'success' | 'error' | 'info';
     text: string;
@@ -75,10 +78,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
   };
 
   const updateData = (updater: (prev: PortfolioData) => PortfolioData) => {
-    setData((prev) => {
-      const next = updater(prev);
-      return next;
-    });
+    setData((prev) => updater(prev));
     setHasUnsavedChanges(true);
   };
 
@@ -102,7 +102,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
       setStatusBanner({
         type: 'success',
         text: result.savedGitHub
-          ? '¡Cambios guardados y sincronizados en GitHub / Vercel!'
+          ? '¡Cambios guardados y publicados en directo!'
           : '¡Cambios guardados correctamente!',
       });
     } catch (err: unknown) {
@@ -115,30 +115,80 @@ export default function PortalView({ initialData }: PortalViewProps) {
     }
   };
 
-  const handleFileUpload = async (
+  // Step 1 when selecting files: open the Instagram-style Crop & Frame Modal
+  const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
     category: 'book' | 'digitals'
   ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const queue: CropQueueItem[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const objectUrl = URL.createObjectURL(file);
+      queue.push({
+        file,
+        srcUrl: objectUrl,
+        title:
+          category === 'digitals'
+            ? `Digital ${Date.now().toString().slice(-4)}`
+            : file.name.replace(/\.[^/.]+$/, ''),
+        category,
+      });
+    }
+
+    setCropQueue(queue);
+    e.target.value = '';
+  };
+
+  // Open Crop & Frame Modal for an existing photo
+  const handleReframeExisting = (photo: PhotoItem) => {
+    setCropQueue([
+      {
+        id: photo.id,
+        srcUrl: photo.jpgSrc || photo.src,
+        title: photo.title,
+        category: photo.category,
+      },
+    ]);
+  };
+
+  // Step 2: Upload the framed/cropped files returned by PhotoCropModal
+  const handleCropComplete = async (
+    results: {
+      existingPhotoId?: string;
+      croppedFile: File;
+      title: string;
+      category: 'book' | 'digitals';
+      aspectRatioId: string;
+    }[]
+  ) => {
+    // Clean up any blob object URLs
+    if (cropQueue) {
+      cropQueue.forEach((item) => {
+        if (item.srcUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(item.srcUrl);
+        }
+      });
+    }
+    setCropQueue(null);
+
     setIsUploading(true);
     setStatusBanner({
       type: 'info',
-      text: `Optimizando y subiendo ${files.length} foto(s) en alta resolución (WebP Retina)...`,
+      text: `Subiendo ${results.length} foto(s) con el encuadre seleccionado...`,
     });
 
     try {
-      const uploadedPhotos: PhotoItem[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      const newlyAdded: PhotoItem[] = [];
+      const updatedMap = new Map<string, PhotoItem>();
+
+      for (const item of results) {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('category', category);
-        formData.append(
-          'title',
-          category === 'digitals' ? `Digital ${Date.now().toString().slice(-4)}` : file.name.replace(/\.[^/.]+$/, '')
-        );
+        formData.append('file', item.croppedFile);
+        formData.append('category', item.category);
+        formData.append('title', item.title);
 
         const res = await fetch('/api/upload', {
           method: 'POST',
@@ -149,26 +199,49 @@ export default function PortalView({ initialData }: PortalViewProps) {
         if (!res.ok) {
           throw new Error(json.error || 'Error subiendo imagen');
         }
-        uploadedPhotos.push(json.photo);
+
+        if (item.existingPhotoId) {
+          updatedMap.set(item.existingPhotoId, json.photo);
+        } else {
+          newlyAdded.push(json.photo);
+        }
       }
 
       updateData((prev) => {
-        const existingCat = prev.photos.filter((p) => p.category === category);
-        const maxOrder = existingCat.reduce((max, p) => Math.max(max, p.order), 0);
-        const numbered = uploadedPhotos.map((p, idx) => ({
-          ...p,
-          order: maxOrder + idx + 1,
-        }));
-        const nextData = {
+        let updatedPhotos = prev.photos.map((p) => {
+          const replacement = updatedMap.get(p.id);
+          if (!replacement) return p;
+          return {
+            ...p,
+            src: replacement.src,
+            jpgSrc: replacement.jpgSrc,
+            width: replacement.width,
+            height: replacement.height,
+            aspectRatio: replacement.aspectRatio,
+            span: replacement.aspectRatio === 'landscape' ? 'wide' : p.span,
+          };
+        });
+
+        if (newlyAdded.length > 0) {
+          const cat = newlyAdded[0].category;
+          const existingCat = updatedPhotos.filter((p) => p.category === cat);
+          const maxOrder = existingCat.reduce((max, p) => Math.max(max, p.order), 0);
+          const numbered = newlyAdded.map((p, idx) => ({
+            ...p,
+            order: maxOrder + idx + 1,
+          }));
+          updatedPhotos = [...updatedPhotos, ...numbered];
+        }
+
+        return {
           ...prev,
-          photos: [...prev.photos, ...numbered],
+          photos: updatedPhotos,
         };
-        return nextData;
       });
 
       setStatusBanner({
         type: 'success',
-        text: `${uploadedPhotos.length} foto(s) añadida(s). Pulsa "Guardar Cambios" arriba para publicarlas.`,
+        text: `¡Encuadre aplicado! Pulsa "Guardar Cambios" arriba para publicar en la web.`,
       });
     } catch (err: unknown) {
       setStatusBanner({
@@ -177,8 +250,18 @@ export default function PortalView({ initialData }: PortalViewProps) {
       });
     } finally {
       setIsUploading(false);
-      e.target.value = '';
     }
+  };
+
+  const handleCropCancel = () => {
+    if (cropQueue) {
+      cropQueue.forEach((item) => {
+        if (item.srcUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(item.srcUrl);
+        }
+      });
+    }
+    setCropQueue(null);
   };
 
   const movePhoto = (photoId: string, direction: 'up' | 'down') => {
@@ -282,7 +365,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-neutral-300 px-4 py-3 text-sm focus:outline-none focus:border-[#111111]"
+                className="w-full border border-neutral-300 px-4 py-3 text-base sm:text-sm focus:outline-none focus:border-[#111111]"
               />
             </div>
 
@@ -318,6 +401,15 @@ export default function PortalView({ initialData }: PortalViewProps) {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-20">
+      {/* Instagram-style Photo Crop & Frame Modal */}
+      {cropQueue && cropQueue.length > 0 && (
+        <PhotoCropModal
+          items={cropQueue}
+          onCancel={handleCropCancel}
+          onComplete={handleCropComplete}
+        />
+      )}
+
       {/* Top Sticky Admin Bar */}
       <header className="sticky top-0 z-40 bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
@@ -461,9 +553,9 @@ export default function PortalView({ initialData }: PortalViewProps) {
                   Galería Principal (Book) y Foto de Portada
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1">
-                  Regla de oro de las agencias: mantén entre <strong>8 y 15 fotos impecables</strong>.
-                  Actualmente tienes <strong>{activeBookCount} visibles</strong>. Pulsa la estrella para
-                  elegir tu Foto Principal (Hero).
+                  Al subir una foto podrás elegir el formato (<strong>3:4, 4:5, 9:16, 2:3</strong>,
+                  etc.) y moverla para elegir el encuadre exacto. También puedes re-encuadrar
+                  cualquier foto pulsando <strong>Encuadrar</strong>.
                 </p>
               </div>
 
@@ -475,13 +567,13 @@ export default function PortalView({ initialData }: PortalViewProps) {
                   accept="image/*"
                   multiple
                   disabled={isUploading}
-                  onChange={(e) => handleFileUpload(e, 'book')}
+                  onChange={(e) => handleFileSelect(e, 'book')}
                   className="hidden"
                 />
               </label>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
               {bookPhotos.map((photo, idx) => {
                 const isHero = data.heroPhotoId === photo.id;
                 return (
@@ -491,12 +583,12 @@ export default function PortalView({ initialData }: PortalViewProps) {
                       isHero ? 'border-[#111111] ring-1 ring-[#111111]' : 'border-neutral-200'
                     } ${!photo.visible ? 'opacity-50' : ''}`}
                   >
-                    <div className="relative aspect-[3/4] bg-neutral-100 overflow-hidden">
+                    <div className="relative bg-neutral-100 overflow-hidden flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={photo.src}
                         alt={photo.title}
-                        className={`w-full h-full object-cover object-top ${
+                        className={`w-full h-auto max-h-[440px] object-contain block ${
                           photo.blackAndWhite ? 'grayscale contrast-[1.05]' : ''
                         }`}
                       />
@@ -533,7 +625,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         className="w-full text-xs font-medium tracking-wider uppercase border-b border-transparent focus:border-neutral-300 pb-1 focus:outline-none"
                       />
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-neutral-100">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-neutral-100">
                         {/* Set as Hero */}
                         <button
                           onClick={() =>
@@ -546,13 +638,23 @@ export default function PortalView({ initialData }: PortalViewProps) {
                           }`}
                         >
                           <Star className="w-3 h-3" />
-                          <span>{isHero ? 'Portada Actual' : 'Hacer Portada'}</span>
+                          <span>{isHero ? 'Portada' : 'Hacer Portada'}</span>
+                        </button>
+
+                        {/* Re-Crop / Frame Button */}
+                        <button
+                          onClick={() => handleReframeExisting(photo)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border border-neutral-200 text-neutral-700 hover:border-[#111111]"
+                          title="Ajustar encuadre (3:4, 9:16, 4:5...)"
+                        >
+                          <Crop className="w-3 h-3" />
+                          <span>Encuadrar</span>
                         </button>
 
                         {/* Toggle B&W */}
                         <button
                           onClick={() => togglePhotoField(photo.id, 'blackAndWhite')}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border ${
+                          className={`inline-flex items-center gap-1 px-2 py-1.5 text-[10px] tracking-wider uppercase border ${
                             photo.blackAndWhite
                               ? 'bg-neutral-800 text-white border-neutral-800'
                               : 'border-neutral-200 text-neutral-700 hover:border-[#111111]'
@@ -639,9 +741,8 @@ export default function PortalView({ initialData }: PortalViewProps) {
                   Digitals / Polaroids (Luz Natural · Cero Retoque)
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1">
-                  Las agencias buscan entre <strong>4 y 6 fotos naturales</strong> (primer plano,
-                  perfil, medio cuerpo y cuerpo entero). Aquí puedes subir las nuevas fotos de
-                  Tàrrega directamente desde el móvil.
+                  Al subir tus nuevas Digitals podrás encuadrarlas (<strong>3:4, 4:5, 9:16</strong>,
+                  etc.) y centrarlas exactamente como en Instagram antes de publicarlas.
                 </p>
               </div>
 
@@ -653,7 +754,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                   accept="image/*"
                   multiple
                   disabled={isUploading}
-                  onChange={(e) => handleFileUpload(e, 'digitals')}
+                  onChange={(e) => handleFileSelect(e, 'digitals')}
                   className="hidden"
                 />
               </label>
@@ -689,7 +790,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
               {digitalPhotos.map((photo, idx) => (
                 <div
                   key={photo.id}
@@ -697,12 +798,12 @@ export default function PortalView({ initialData }: PortalViewProps) {
                     !photo.visible ? 'opacity-50' : ''
                   }`}
                 >
-                  <div className="relative aspect-[3/4] bg-neutral-100 overflow-hidden">
+                  <div className="relative bg-neutral-100 overflow-hidden flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photo.src}
                       alt={photo.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto max-h-[420px] object-contain block"
                     />
                     <span className="absolute top-3 left-3 bg-black/80 text-white text-[10px] tracking-widest uppercase px-2 py-1">
                       Digital #{idx + 1}
@@ -724,6 +825,28 @@ export default function PortalView({ initialData }: PortalViewProps) {
                       className="w-full text-xs font-medium tracking-wider uppercase border-b border-transparent focus:border-neutral-300 pb-1 focus:outline-none"
                     />
 
+                    <div className="flex items-center justify-between pt-1 border-t border-neutral-100">
+                      <button
+                        onClick={() => handleReframeExisting(photo)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border border-neutral-200 text-neutral-700 hover:border-[#111111]"
+                      >
+                        <Crop className="w-3 h-3" />
+                        <span>Encuadrar</span>
+                      </button>
+
+                      <button
+                        onClick={() => togglePhotoField(photo.id, 'visible')}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border border-neutral-200 hover:border-[#111111]"
+                      >
+                        {photo.visible ? (
+                          <Eye className="w-3.5 h-3.5" />
+                        ) : (
+                          <EyeOff className="w-3.5 h-3.5" />
+                        )}
+                        <span>{photo.visible ? 'Visible' : 'Oculta'}</span>
+                      </button>
+                    </div>
+
                     <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
                       <div className="flex items-center gap-1">
                         <button
@@ -742,21 +865,12 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         </button>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => togglePhotoField(photo.id, 'visible')}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border border-neutral-200 hover:border-[#111111]"
-                        >
-                          {photo.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          <span>{photo.visible ? 'Visible' : 'Oculta'}</span>
-                        </button>
-                        <button
-                          onClick={() => deletePhoto(photo.id)}
-                          className="p-1.5 text-red-600 border border-neutral-200 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => deletePhoto(photo.id)}
+                        className="p-1.5 text-red-600 border border-neutral-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>

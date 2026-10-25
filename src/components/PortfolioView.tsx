@@ -249,7 +249,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                   loading="eager"
                   fetchPriority="high"
                   decoding="sync"
-                  className={`w-full h-[54dvh] sm:h-auto sm:max-h-[75vh] lg:max-h-[84vh] object-cover object-top block ${
+                  className={`w-full max-h-[54dvh] sm:max-h-[75vh] lg:max-h-[84vh] object-contain mx-auto block ${
                     heroPhoto.blackAndWhite ? 'grayscale contrast-[1.04]' : ''
                   }`}
                 />
@@ -418,7 +418,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
           </div>
 
           {/* Mobile: 1 full-width column so scouts see natural skin/proportions large; Desktop: 4 columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-start">
             {digitalPhotos.map((photo, idx) => (
               <div
                 key={photo.id}
@@ -433,7 +433,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                   height={photo.height || 2048}
                   loading="lazy"
                   decoding="async"
-                  className={`w-full h-auto lg:aspect-[3/4] lg:object-cover block ${
+                  className={`w-full h-auto block ${
                     photo.blackAndWhite ? 'grayscale contrast-[1.05]' : ''
                   }`}
                 />
