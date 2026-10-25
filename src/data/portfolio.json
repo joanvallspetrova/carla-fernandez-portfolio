@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T21:25:46.427Z",
+  "updatedAt": "2026-10-25T21:27:31.663Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -98,16 +98,16 @@
     },
     {
       "id": "book-05",
-      "src": "/photos/book-05-mondrian-shadow.webp",
-      "jpgSrc": "/photos/book-05-mondrian-shadow.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.jpg",
       "category": "book",
       "title": "Light & Form Editorial",
       "visible": true,
       "blackAndWhite": false,
       "span": "wide",
-      "aspectRatio": "landscape",
+      "aspectRatio": "portrait",
       "order": 5,
-      "width": 1600,
+      "width": 801,
       "height": 1068
     },
     {
