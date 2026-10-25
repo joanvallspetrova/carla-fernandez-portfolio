@@ -26,4 +26,4 @@ A single Next.js deployment handles both subdomains via [`src/middleware.ts`](./
 3. In **Vercel Project → Settings → Environment Variables**, configure:
    - `PORTAL_PASSWORD`: Password for Carla to log in at `portal.carlafernandezoliva.com` (default fallback: `carla2026`).
    - `GITHUB_TOKEN`: A GitHub Personal Access Token (with `repo` / `contents:write` permission) so photos uploaded and changes saved in the Portal are committed directly to the GitHub repository.
-   - `GITHUB_REPO`: `Minus2002/carla-fernandez-portfolio`
+   - `GITHUB_REPO`: `joanvallspetrova/carla-fernandez-portfolio`

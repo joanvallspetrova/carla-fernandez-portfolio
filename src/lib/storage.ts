@@ -4,7 +4,7 @@ import { PortfolioData } from '@/types/portfolio';
 import defaultData from '@/data/portfolio.json';
 
 const DATA_FILE_PATH = path.join(process.cwd(), 'src', 'data', 'portfolio.json');
-const DEFAULT_REPO = process.env.GITHUB_REPO || 'Minus2002/carla-fernandez-portfolio';
+const DEFAULT_REPO = process.env.GITHUB_REPO || 'joanvallspetrova/carla-fernandez-portfolio';
 const DEFAULT_BRANCH = process.env.GITHUB_BRANCH || 'main';
 
 export async function getPortfolioData(): Promise<PortfolioData> {
