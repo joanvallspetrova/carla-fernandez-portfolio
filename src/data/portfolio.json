@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T20:44:26.946Z",
+  "updatedAt": "2026-10-25T21:07:23.892Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -210,8 +210,8 @@
     }
   ],
   "digitalVideo": {
-    "src": "/photos/digital-video-01.mp4",
-    "visible": true,
+    "src": "",
+    "visible": false,
     "title": "360° Natural Light Digitals"
   }
 }
