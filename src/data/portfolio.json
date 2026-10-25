@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:43:30.714Z",
+  "updatedAt": "2026-10-25T22:43:48.699Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -62,7 +62,7 @@
       "title": "Editorial Lace",
       "visible": true,
       "blackAndWhite": false,
-      "span": "wide",
+      "span": "normal",
       "aspectRatio": "portrait",
       "order": 7,
       "width": 1027,
@@ -132,7 +132,7 @@
       "title": "Studio Portrait II",
       "visible": true,
       "blackAndWhite": false,
-      "span": "wide",
+      "span": "normal",
       "aspectRatio": "portrait",
       "order": 8,
       "width": 1134,
