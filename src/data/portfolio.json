@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:46:23.317Z",
+  "updatedAt": "2026-10-25T22:46:46.404Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -56,8 +56,8 @@
     },
     {
       "id": "book-02",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968378591-editorial-lace.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968378591-editorial-lace.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968403979-editorial-lace.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968403979-editorial-lace.jpg",
       "category": "book",
       "title": "Editorial Lace",
       "visible": true,
