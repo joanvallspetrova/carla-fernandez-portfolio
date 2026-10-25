@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:48:01.508Z",
+  "updatedAt": "2026-10-25T22:48:25.174Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -126,8 +126,8 @@
     },
     {
       "id": "book-07",
-      "src": "/photos/book-07-studio-three-quarter.webp",
-      "jpgSrc": "/photos/book-07-studio-three-quarter.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968502627-studio-portrait-ii.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968502627-studio-portrait-ii.jpg",
       "category": "book",
       "title": "Studio Portrait II",
       "visible": true,
@@ -136,7 +136,7 @@
       "aspectRatio": "portrait",
       "order": 5,
       "width": 1134,
-      "height": 1700
+      "height": 1512
     },
     {
       "id": "digitals-1792955655911",
