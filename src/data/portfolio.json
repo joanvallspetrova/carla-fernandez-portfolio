@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T20:16:02.184Z",
+  "updatedAt": "2026-10-25T20:21:14.641Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -195,18 +195,32 @@
       "height": 3709
     },
     {
-      "id": "digitals-1792958711873",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792958711873-facetune-25-10-2026-21-00-38.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792958711873-facetune-25-10-2026-21-00-38.jpg",
-      "category": "digitals",
-      "title": "FULL LENGTH FRONTAL ",
+      "id": "book-1792959501968",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792959501968-facetune-18-10-2026-18-05-12.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792959501968-facetune-18-10-2026-18-05-12.jpg",
+      "category": "book",
+      "title": "Facetune_18-10-2026-18-05-12",
       "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 7,
-      "width": 1833,
-      "height": 3225
+      "order": 8,
+      "width": 2537,
+      "height": 4096
+    },
+    {
+      "id": "digitals-1792959631542",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792959631542-facetune-25-10-2026-21-00-38.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792959631542-facetune-25-10-2026-21-00-38.jpg",
+      "category": "digitals",
+      "title": "FULL LENGTH FRONTAL",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 8,
+      "width": 1914,
+      "height": 3402
     }
   ],
   "digitalVideo": {
