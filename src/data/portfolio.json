@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T21:22:45.221Z",
+  "updatedAt": "2026-10-25T21:23:20.966Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -33,10 +33,10 @@
   "compCard": {
     "frontPhotoId": "book-01",
     "backPhotoIds": [
-      "digitals-1792955655911",
       "book-07",
       "book-05",
-      "book-02"
+      "book-02",
+      "book-03"
     ]
   },
   "photos": [
@@ -210,7 +210,7 @@
     }
   ],
   "digitalVideo": {
-    "src": "https://ke9z1iv152qbma3i.public.blob.vercel-storage.com/videos/carla-digitals-1080p-faststart.mp4",
+    "src": "https://ke9z1iv152qbma3i.public.blob.vercel-storage.com/videos/digital-video-1792962625166-q5X02EMv9hL6cxJAUHm8AGX0nyNvAv.mov",
     "visible": true,
     "title": "360° Natural Light Digitals"
   }
