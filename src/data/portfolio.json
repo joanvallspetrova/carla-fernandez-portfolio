@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T20:27:33.787Z",
+  "updatedAt": "2026-10-25T20:27:46.971Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -193,20 +193,6 @@
       "order": 6,
       "width": 2782,
       "height": 3709
-    },
-    {
-      "id": "book-1792959501968",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792959501968-facetune-18-10-2026-18-05-12.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792959501968-facetune-18-10-2026-18-05-12.jpg",
-      "category": "book",
-      "title": "Facetune_18-10-2026-18-05-12",
-      "visible": true,
-      "blackAndWhite": false,
-      "span": "normal",
-      "aspectRatio": "portrait",
-      "order": 8,
-      "width": 2537,
-      "height": 4096
     },
     {
       "id": "digitals-1792959631542",
