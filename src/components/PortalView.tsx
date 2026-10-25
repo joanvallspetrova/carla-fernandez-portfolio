@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { upload } from '@vercel/blob/client';
 import { PortfolioData, PhotoItem } from '@/types/portfolio';
 import { generateCompCardPdf } from '@/lib/compCardPdf';
 import PhotoCropModal, { CropQueueItem } from '@/components/PhotoCropModal';
@@ -42,6 +43,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadPercent, setVideoUploadPercent] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [cropQueue, setCropQueue] = useState<CropQueueItem[] | null>(null);
   const [statusBanner, setStatusBanner] = useState<{
@@ -291,96 +293,41 @@ export default function PortalView({ initialData }: PortalViewProps) {
     setCropQueue(null);
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64 = result.includes(',') ? result.split(',')[1] : result;
-        resolve(base64);
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
     setIsUploadingVideo(true);
+    setVideoUploadPercent(0);
     setStatusBanner({
       type: 'info',
-      text: `Subiendo y publicando vídeo "${file.name}" (${(file.size / (1024 * 1024)).toFixed(
-        1
-      )} MB)...`,
+      text: `Subiendo vídeo (${sizeMb} MB)... 0%`,
     });
 
     try {
-      const cfgRes = await fetch('/api/upload-video', {
-        headers: password ? { 'x-portal-password': password } : undefined,
-      });
-      if (!cfgRes.ok) {
-        throw new Error('No autorizado para subir vídeo');
-      }
-      const cfg = await cfgRes.json();
-
       const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
       const safeExt = ['mp4', 'mov', 'webm', 'm4v'].includes(ext) ? ext : 'mp4';
-      const filename = `digital-video-${Date.now()}.${safeExt}`;
+      const filename = `videos/digital-video-${Date.now()}.${safeExt}`;
 
-      let videoUrl = `/photos/${filename}`;
-
-      if (cfg.token) {
-        const base64Content = await fileToBase64(file);
-        const repoPath = `public/photos/${filename}`;
-        const ghRes = await fetch(
-          `https://api.github.com/repos/${cfg.repo}/contents/${repoPath}`,
-          {
-            method: 'PUT',
-            headers: {
-              Authorization: `Bearer ${cfg.token}`,
-              Accept: 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: `Upload digital video ${filename} via Portal`,
-              content: base64Content,
-              branch: cfg.branch || 'main',
-            }),
-          }
-        );
-
-        if (!ghRes.ok) {
-          const errText = await ghRes.text();
-          throw new Error(`Error subiendo vídeo a GitHub (${ghRes.status}): ${errText}`);
-        }
-
-        if (cfg.isVercel) {
-          videoUrl = `https://raw.githubusercontent.com/${cfg.repo}/${
-            cfg.branch || 'main'
-          }/${repoPath}`;
-        }
-      }
-
-      if (!cfg.isVercel) {
-        const formData = new FormData();
-        formData.append('file', file);
-        const localRes = await fetch('/api/upload-video', {
-          method: 'POST',
-          headers: password ? { 'x-portal-password': password } : undefined,
-          body: formData,
-        });
-        if (localRes.ok) {
-          const localJson = await localRes.json();
-          videoUrl = localJson.url;
-        }
-      }
+      const blob = await upload(filename, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload-video',
+        multipart: true,
+        onUploadProgress: (progressEvent) => {
+          const pct = Math.round(progressEvent.percentage);
+          setVideoUploadPercent(pct);
+          setStatusBanner({
+            type: 'info',
+            text: `Subiendo vídeo (${sizeMb} MB)... ${pct}%`,
+          });
+        },
+      });
 
       const nextData: PortfolioData = {
         ...data,
         digitalVideo: {
-          src: videoUrl,
+          src: blob.url,
           visible: true,
           title: data.digitalVideo?.title || '360° Natural Light Digitals',
         },
@@ -398,6 +345,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
       });
     } finally {
       setIsUploadingVideo(false);
+      setVideoUploadPercent(0);
       e.target.value = '';
     }
   };
@@ -570,11 +518,22 @@ export default function PortalView({ initialData }: PortalViewProps) {
           <div className="bg-white p-6 max-w-sm w-full text-center space-y-3 border border-neutral-200 shadow-2xl">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#111111]" />
             <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#111111]">
-              Subiendo y Publicando...
+              {isUploadingVideo
+                ? `Subiendo Vídeo... ${videoUploadPercent}%`
+                : 'Subiendo y Publicando...'}
             </h3>
+            {isUploadingVideo && (
+              <div className="w-full bg-neutral-200 h-2 overflow-hidden">
+                <div
+                  className="bg-[#111111] h-full transition-all duration-200"
+                  style={{ width: `${videoUploadPercent}%` }}
+                />
+              </div>
+            )}
             <p className="text-xs text-neutral-500">
-              Optimizando archivo en alta resolución y guardándolo en la web. No cierres esta
-              pestaña.
+              {isUploadingVideo
+                ? 'Subiendo vídeo en alta calidad por bloques (soporta hasta 250 MB). No cierres esta pestaña.'
+                : 'Optimizando archivo en alta resolución y guardándolo en la web. No cierres esta pestaña.'}
             </p>
           </div>
         </div>
