@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:40:41.497Z",
+  "updatedAt": "2026-10-25T22:40:56.726Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -224,8 +224,8 @@
     },
     {
       "id": "digitals-1792967311820",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792967311820-digital-6768.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792967311820-digital-6768.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792968053570-digital-6768.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792968053570-digital-6768.jpg",
       "category": "digitals",
       "title": "Digital 6768",
       "visible": true,
@@ -233,7 +233,7 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 5,
-      "width": 1350,
+      "width": 1013,
       "height": 1800
     }
   ],
