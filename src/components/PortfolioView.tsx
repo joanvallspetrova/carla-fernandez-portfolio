@@ -3,7 +3,16 @@
 import React, { useState } from 'react';
 import { PortfolioData, PhotoItem } from '@/types/portfolio';
 import { generateCompCardPdf } from '@/lib/compCardPdf';
-import { Download, Instagram, Mail, Check, X, ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
+import {
+  Download,
+  Instagram,
+  Mail,
+  Check,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+} from 'lucide-react';
 
 interface PortfolioViewProps {
   initialData: PortfolioData;
@@ -122,12 +131,11 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
     copy: lang === 'en' ? 'Copy' : 'Copiar',
   };
 
+  const bwhCompact = `${stats.bust.replace(' cm', '')} - ${stats.waist.replace(' cm', '')} - ${stats.hips}`;
+
   const measurementsList = [
     { label: t.height, value: stats.height },
-    {
-      label: t.bustWaistHips,
-      value: `${stats.bust.replace(' cm', '')} - ${stats.waist.replace(' cm', '')} - ${stats.hips}`,
-    },
+    { label: t.bustWaistHips, value: bwhCompact },
     { label: t.shoe, value: stats.shoe },
     { label: t.dress, value: stats.dress },
     { label: t.hair, value: lang === 'en' ? stats.hair.en : stats.hair.es },
@@ -137,74 +145,95 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
 
   return (
     <div className="min-h-screen bg-white text-[#111111]">
-      {/* Fixed Minimalist Navigation Bar (3 Anchors: Portfolio | Digitals | Contact) */}
+      {/* Fixed Minimalist Navigation Bar — Optimized for Mobile Instagram WebView & Desktop */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-neutral-100">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-14 sm:h-16 flex items-center justify-between">
-          <a
-            href="#top"
-            className="font-serif text-lg sm:text-2xl tracking-[0.14em] uppercase font-normal text-[#111111] truncate pr-2"
-          >
-            {profile.name}
-          </a>
-
-          <nav className="flex items-center gap-4 sm:gap-8 text-[11px] sm:text-xs tracking-[0.2em] uppercase font-medium text-[#111111]">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-8 lg:px-12">
+          {/* Top Row: Editorial Serif Name + Language & Desktop Links */}
+          <div className="h-12 sm:h-16 flex items-center justify-between">
             <a
-              href="#portfolio"
-              className="hover:opacity-60 transition-opacity py-1"
+              href="#top"
+              className="font-serif text-[17px] sm:text-2xl tracking-[0.12em] sm:tracking-[0.14em] uppercase font-normal text-[#111111] truncate"
             >
+              {profile.name}
+            </a>
+
+            <div className="flex items-center gap-5 sm:gap-8">
+              {/* Desktop 3-Anchor Menu */}
+              <nav className="hidden md:flex items-center gap-8 text-xs tracking-[0.2em] uppercase font-medium text-[#111111]">
+                <a href="#portfolio" className="hover:opacity-60 transition-opacity py-1">
+                  {t.portfolio}
+                </a>
+                <a href="#digitals" className="hover:opacity-60 transition-opacity py-1">
+                  {t.digitals}
+                </a>
+                <a href="#contact" className="hover:opacity-60 transition-opacity py-1">
+                  {t.contact}
+                </a>
+                <button
+                  onClick={handleDownloadCompCard}
+                  disabled={isGeneratingPdf}
+                  className="inline-flex items-center gap-1.5 border border-[#111111] px-3.5 py-1.5 text-[10px] tracking-[0.2em] uppercase hover:bg-[#111111] hover:text-white transition-colors disabled:opacity-50"
+                >
+                  <Download className="w-3 h-3" />
+                  <span>{isGeneratingPdf ? t.generatingPdf : t.compCard}</span>
+                </button>
+              </nav>
+
+              {/* Language Switcher (EN / ES) */}
+              <div className="flex items-center gap-1.5 text-[11px] tracking-widest text-neutral-400">
+                <button
+                  onClick={() => setLang('en')}
+                  className={`px-1 py-1 ${
+                    lang === 'en' ? 'text-[#111111] font-semibold' : 'hover:text-[#111111]'
+                  }`}
+                  aria-label="English"
+                >
+                  EN
+                </button>
+                <span>/</span>
+                <button
+                  onClick={() => setLang('es')}
+                  className={`px-1 py-1 ${
+                    lang === 'es' ? 'text-[#111111] font-semibold' : 'hover:text-[#111111]'
+                  }`}
+                  aria-label="Español"
+                >
+                  ES
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile 3-Anchor Bar (Portfolio | Digitals | Contact | PDF) — Thumb-friendly for Instagram WebView */}
+          <nav className="flex md:hidden items-center justify-between border-t border-neutral-100 h-9 text-[10px] tracking-[0.18em] uppercase font-medium text-[#111111]">
+            <a href="#portfolio" className="py-2 pr-2 active:opacity-60">
               {t.portfolio}
             </a>
-            <a
-              href="#digitals"
-              className="hover:opacity-60 transition-opacity py-1"
-            >
+            <a href="#digitals" className="py-2 px-2 active:opacity-60">
               {t.digitals}
             </a>
-            <a
-              href="#contact"
-              className="hover:opacity-60 transition-opacity py-1"
-            >
+            <a href="#contact" className="py-2 px-2 active:opacity-60">
               {t.contact}
             </a>
-
             <button
               onClick={handleDownloadCompCard}
               disabled={isGeneratingPdf}
-              className="hidden md:inline-flex items-center gap-1.5 border border-[#111111] px-3.5 py-1.5 text-[10px] tracking-[0.2em] uppercase hover:bg-[#111111] hover:text-white transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 py-1 px-2 bg-[#111111] text-white text-[9px] tracking-[0.16em] uppercase"
             >
-              <Download className="w-3 h-3" />
-              <span>{isGeneratingPdf ? t.generatingPdf : t.compCard}</span>
+              <Download className="w-2.5 h-2.5" />
+              <span>PDF</span>
             </button>
-
-            {/* International Language Switcher (EN default for agencies / ES) */}
-            <div className="flex items-center gap-1 text-[10px] tracking-widest border-l border-neutral-200 pl-3 sm:pl-4 text-neutral-400">
-              <button
-                onClick={() => setLang('en')}
-                className={lang === 'en' ? 'text-[#111111] font-semibold' : 'hover:text-[#111111]'}
-                aria-label="English"
-              >
-                EN
-              </button>
-              <span>/</span>
-              <button
-                onClick={() => setLang('es')}
-                className={lang === 'es' ? 'text-[#111111] font-semibold' : 'hover:text-[#111111]'}
-                aria-label="Español"
-              >
-                ES
-              </button>
-            </div>
           </nav>
         </div>
       </header>
 
-      {/* SECTION 1: HERO + IMMEDIATE STATS (< 3 SECONDS RULE) */}
+      {/* SECTION 1: HERO + IMMEDIATE STATS (< 3 SECONDS RULE ON MOBILE & DESKTOP) */}
       <section
         id="top"
-        className="max-w-[1440px] mx-auto px-3 sm:px-8 lg:px-12 pt-3 pb-10 sm:py-10 lg:py-14"
+        className="max-w-[1440px] mx-auto px-2 sm:px-8 lg:px-12 pt-2 pb-8 sm:py-10 lg:py-14"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center">
-          {/* Left / Top: High-Impact Hero Portrait (Eager loaded, high priority, zero frames/shadows) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-12 items-center">
+          {/* Hero Portrait — Sized on mobile (52dvh) so Face + Stats are BOTH visible immediately without scrolling in Instagram WebView */}
           <div className="lg:col-span-7 w-full">
             {heroPhoto && (
               <div
@@ -220,7 +249,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                   loading="eager"
                   fetchPriority="high"
                   decoding="sync"
-                  className={`w-full h-auto max-h-[78vh] lg:max-h-[84vh] object-cover object-top block ${
+                  className={`w-full h-[54dvh] sm:h-auto sm:max-h-[75vh] lg:max-h-[84vh] object-cover object-top block ${
                     heroPhoto.blackAndWhite ? 'grayscale contrast-[1.04]' : ''
                   }`}
                 />
@@ -228,26 +257,79 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             )}
           </div>
 
-          {/* Right / Bottom: Model Name + Technical Measurements Table + Comp Card Download */}
+          {/* Right / Bottom: Model Name + Technical Measurements */}
           <div className="lg:col-span-5 flex flex-col justify-center px-1 sm:px-0">
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-[52px] leading-[1.08] tracking-[0.08em] uppercase font-normal text-[#111111] mb-6 sm:mb-8">
+            {/* Desktop Editorial Heading */}
+            <h1 className="hidden sm:block font-serif text-4xl lg:text-[52px] leading-[1.08] tracking-[0.08em] uppercase font-normal text-[#111111] mb-8">
               {profile.firstName}
-              <span className="block text-2xl sm:text-4xl lg:text-[40px] mt-1 tracking-[0.12em]">
+              <span className="block text-3xl lg:text-[40px] mt-1 tracking-[0.12em]">
                 {profile.lastName}
               </span>
             </h1>
 
-            {/* Technical Measurements Table (Metric System) */}
-            <div className="border-t border-neutral-200 divide-y divide-neutral-200 text-xs sm:text-sm">
+            {/* Mobile Ultra-Scannable 3-Second Stats Grid (Visible immediately under Hero photo on mobile) */}
+            <div className="grid grid-cols-4 sm:hidden gap-y-2.5 gap-x-2 border-y border-neutral-200 py-3 text-center">
+              <div>
+                <span className="block text-[9px] tracking-[0.14em] uppercase text-neutral-400">
+                  {t.height}
+                </span>
+                <span className="text-xs font-medium uppercase text-[#111111]">
+                  {stats.height}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[9px] tracking-[0.14em] uppercase text-neutral-400">
+                  B - W - H
+                </span>
+                <span className="text-xs font-medium uppercase text-[#111111]">
+                  {bwhCompact.replace(' cm', '')}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[9px] tracking-[0.14em] uppercase text-neutral-400">
+                  {t.shoe}
+                </span>
+                <span className="text-xs font-medium uppercase text-[#111111]">
+                  {stats.shoe}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[9px] tracking-[0.14em] uppercase text-neutral-400">
+                  {t.dress}
+                </span>
+                <span className="text-xs font-medium uppercase text-[#111111]">
+                  {stats.dress}
+                </span>
+              </div>
+              <div className="col-span-2 border-t border-neutral-100 pt-2">
+                <span className="text-[9px] tracking-[0.14em] uppercase text-neutral-400 mr-1.5">
+                  {t.hair}:
+                </span>
+                <span className="text-[11px] font-medium uppercase text-[#111111]">
+                  {lang === 'en' ? stats.hair.en : stats.hair.es}
+                </span>
+              </div>
+              <div className="col-span-2 border-t border-neutral-100 pt-2">
+                <span className="text-[9px] tracking-[0.14em] uppercase text-neutral-400 mr-1.5">
+                  {t.eyes}:
+                </span>
+                <span className="text-[11px] font-medium uppercase text-[#111111]">
+                  {lang === 'en' ? stats.eyes.en : stats.eyes.es}
+                </span>
+              </div>
+            </div>
+
+            {/* Desktop Technical Measurements Table (Metric System) */}
+            <div className="hidden sm:block border-t border-neutral-200 divide-y divide-neutral-200 text-sm">
               {measurementsList.map((item) => (
                 <div
                   key={item.label}
-                  className="py-2.5 sm:py-3 flex items-center justify-between tracking-[0.12em]"
+                  className="py-3 flex items-center justify-between tracking-[0.12em]"
                 >
-                  <span className="uppercase text-neutral-500 text-[11px] sm:text-xs font-normal">
+                  <span className="uppercase text-neutral-500 text-xs font-normal">
                     {item.label}
                   </span>
-                  <span className="font-medium text-[#111111] uppercase text-xs sm:text-sm">
+                  <span className="font-medium text-[#111111] uppercase text-sm">
                     {item.value}
                   </span>
                 </div>
@@ -255,11 +337,11 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             </div>
 
             {/* Primary Actions for Scouts / Bookers */}
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="mt-4 sm:mt-8 grid grid-cols-2 sm:flex sm:flex-row gap-2.5 sm:gap-3">
               <button
                 onClick={handleDownloadCompCard}
                 disabled={isGeneratingPdf}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-5 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                className="col-span-2 sm:flex-1 inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-4 py-3.5 text-[11px] tracking-[0.18em] uppercase font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>{isGeneratingPdf ? t.generatingPdf : t.downloadFullCompCard}</span>
@@ -267,7 +349,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
 
               <a
                 href="#digitals"
-                className="inline-flex items-center justify-center border border-[#111111] text-[#111111] px-5 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-[#FAFAFA] transition-colors"
+                className="col-span-2 sm:w-auto inline-flex items-center justify-center border border-[#111111] text-[#111111] px-5 py-3 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-[#FAFAFA] transition-colors"
               >
                 {t.digitals}
               </a>
@@ -276,22 +358,22 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
         </div>
       </section>
 
-      {/* SECTION 2: MAIN GALLERY (BOOK) — 1 Column Mobile (Instagram WebView), 2-3 Columns Desktop */}
+      {/* SECTION 2: MAIN GALLERY (BOOK) — 1 Full-Width Column on Mobile (Instagram WebView), 2-3 Columns on Desktop */}
       <section
         id="portfolio"
-        className="max-w-[1440px] mx-auto px-3 sm:px-8 lg:px-12 py-10 sm:py-16 border-t border-neutral-100"
+        className="max-w-[1440px] mx-auto px-2 sm:px-8 lg:px-12 py-8 sm:py-16 border-t border-neutral-100"
       >
-        <div className="flex items-baseline justify-between mb-6 sm:mb-10 px-1 sm:px-0">
+        <div className="flex items-baseline justify-between mb-4 sm:mb-10 px-1 sm:px-0">
           <h2 className="text-xs sm:text-sm tracking-[0.25em] uppercase font-medium text-[#111111]">
             {t.portfolio}
           </h2>
-          <span className="text-[10px] sm:text-xs tracking-[0.18em] uppercase text-neutral-400">
+          <span className="text-[10px] sm:text-xs tracking-[0.16em] uppercase text-neutral-400">
             {t.bookSubtitle}
           </span>
         </div>
 
-        {/* Mobile: 1 full-width column for thumb scrolling in Instagram WebView. Desktop: 2-3 column editorial gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-10 items-start">
+        {/* Mobile: 1 column near-full-bleed for thumb scrolling. Desktop: 2-3 column gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-8 lg:gap-10 items-start">
           {bookPhotos.map((photo, idx) => {
             const isWide = photo.span === 'wide' || photo.aspectRatio === 'landscape';
             return (
@@ -310,7 +392,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                   height={photo.height || 1700}
                   loading={idx < 2 ? 'eager' : 'lazy'}
                   decoding="async"
-                  className={`w-full h-auto block transition-opacity duration-300 ${
+                  className={`w-full h-auto block ${
                     photo.blackAndWhite ? 'grayscale contrast-[1.05]' : ''
                   }`}
                 />
@@ -323,20 +405,20 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
       {/* SECTION 3: DIGITALS / POLAROIDS (Natural Light, Zero Retouching) */}
       <section
         id="digitals"
-        className="bg-[#FAFAFA] border-t border-neutral-200/70 py-12 sm:py-20"
+        className="bg-[#FAFAFA] border-t border-neutral-200/70 py-10 sm:py-20"
       >
-        <div className="max-w-[1440px] mx-auto px-3 sm:px-8 lg:px-12">
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mb-6 sm:mb-10 px-1 sm:px-0">
+        <div className="max-w-[1440px] mx-auto px-2 sm:px-8 lg:px-12">
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5 mb-5 sm:mb-10 px-1 sm:px-0">
             <h2 className="text-xs sm:text-sm tracking-[0.25em] uppercase font-medium text-[#111111]">
               {t.digitals} / Polaroids
             </h2>
-            <span className="text-[10px] sm:text-xs tracking-[0.18em] uppercase text-neutral-500">
+            <span className="text-[10px] sm:text-xs tracking-[0.16em] uppercase text-neutral-500">
               {t.digitalsSubtitle}
             </span>
           </div>
 
-          {/* 1 column on mobile so bookers see full-size unretouched skin/bone structure; 4 columns on desktop */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Mobile: 1 full-width column so scouts see natural skin/proportions large; Desktop: 4 columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {digitalPhotos.map((photo, idx) => (
               <div
                 key={photo.id}
@@ -359,10 +441,10 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             ))}
           </div>
 
-          {/* Optional Natural Movement / Walk Video in Digitals Section */}
+          {/* Natural Movement / Walk Video in Digitals Section */}
           {digitalVideo && digitalVideo.visible && digitalVideo.src && (
-            <div className="mt-8 sm:mt-12 max-w-md mx-auto">
-              <div className="text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3 text-center">
+            <div className="mt-6 sm:mt-12 max-w-md mx-auto">
+              <div className="text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-2.5 text-center">
                 {digitalVideo.title}
               </div>
               <div className="bg-white overflow-hidden">
@@ -380,7 +462,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
           )}
 
           {/* Compact Measurement Reminder Bar inside Digitals for Scouts */}
-          <div className="mt-10 pt-6 border-t border-neutral-200 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[11px] tracking-[0.16em] uppercase text-neutral-600">
+          <div className="mt-8 sm:mt-10 pt-6 border-t border-neutral-200 flex flex-wrap items-center justify-center gap-x-6 sm:gap-x-8 gap-y-2 text-[11px] tracking-[0.15em] uppercase text-neutral-600 px-2">
             <span>
               <strong className="text-[#111111] font-medium">{t.height}:</strong> {stats.height}
             </span>
@@ -404,31 +486,31 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
       </section>
 
       {/* SECTION 4: CONTACT & COMP CARD (Privacy-First: Only Email, Instagram, Direct Form & PDF Comp Card) */}
-      <footer id="contact" className="bg-white border-t border-neutral-200 py-14 sm:py-24">
+      <footer id="contact" className="bg-white border-t border-neutral-200 py-12 sm:py-24">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
             {/* Left Column: Direct Links & Comp Card Download */}
-            <div className="lg:col-span-6 space-y-8">
+            <div className="lg:col-span-6 space-y-6 sm:space-y-8">
               <div>
                 <p className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2">
                   {t.contact}
                 </p>
-                <h2 className="font-serif text-3xl sm:text-4xl tracking-[0.1em] uppercase font-normal text-[#111111]">
+                <h2 className="font-serif text-2xl sm:text-4xl tracking-[0.1em] uppercase font-normal text-[#111111]">
                   {profile.name}
                 </h2>
-                <p className="text-xs tracking-[0.2em] uppercase text-neutral-500 mt-2">
+                <p className="text-xs tracking-[0.2em] uppercase text-neutral-500 mt-1.5">
                   {stats.base}
                 </p>
               </div>
 
-              <div className="space-y-4 pt-2">
+              <div className="space-y-4 pt-1">
                 {/* Direct Email + Copy Button */}
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href={`mailto:${contact.email}`}
-                    className="inline-flex items-center gap-2.5 text-sm sm:text-base tracking-[0.08em] text-[#111111] hover:opacity-60 transition-opacity font-medium"
+                    className="inline-flex items-center gap-2.5 text-sm sm:text-base tracking-[0.06em] text-[#111111] hover:opacity-60 transition-opacity font-medium break-all"
                   >
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 shrink-0" />
                     <span>{contact.email}</span>
                   </a>
                   <button
@@ -452,9 +534,9 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                     href={contact.instagramUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 text-sm sm:text-base tracking-[0.08em] text-[#111111] hover:opacity-60 transition-opacity"
+                    className="inline-flex items-center gap-2.5 text-sm sm:text-base tracking-[0.06em] text-[#111111] hover:opacity-60 transition-opacity"
                   >
-                    <Instagram className="w-4 h-4" />
+                    <Instagram className="w-4 h-4 shrink-0" />
                     <span>{contact.instagram}</span>
                     <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
                   </a>
@@ -476,25 +558,25 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
 
             {/* Right Column: Clean Frictionless Booking / Casting Form (No Captchas) */}
             <div className="lg:col-span-6">
-              <p className="text-[11px] tracking-[0.22em] uppercase text-neutral-500 mb-6">
+              <p className="text-[11px] tracking-[0.22em] uppercase text-neutral-500 mb-4 sm:mb-6">
                 {t.directBooking}
               </p>
-              <form onSubmit={handleInquirySubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form onSubmit={handleInquirySubmit} className="space-y-3.5 sm:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                   <input
                     type="text"
                     required
                     placeholder={t.yourName}
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
-                    className="w-full border border-neutral-300 bg-white px-4 py-3 text-xs tracking-[0.08em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 bg-white px-4 py-3.5 text-base sm:text-xs tracking-[0.06em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111] rounded-none"
                   />
                   <input
                     type="text"
                     placeholder={t.agencyOrBrand}
                     value={senderAgency}
                     onChange={(e) => setSenderAgency(e.target.value)}
-                    className="w-full border border-neutral-300 bg-white px-4 py-3 text-xs tracking-[0.08em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 bg-white px-4 py-3.5 text-base sm:text-xs tracking-[0.06em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111] rounded-none"
                   />
                 </div>
                 <textarea
@@ -503,11 +585,11 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
                   placeholder={t.projectDetails}
                   value={senderMessage}
                   onChange={(e) => setSenderMessage(e.target.value)}
-                  className="w-full border border-neutral-300 bg-white px-4 py-3 text-xs tracking-[0.08em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111]"
+                  className="w-full border border-neutral-300 bg-white px-4 py-3.5 text-base sm:text-xs tracking-[0.06em] text-[#111111] placeholder:text-neutral-400 focus:outline-none focus:border-[#111111] rounded-none"
                 />
                 <button
                   type="submit"
-                  className="border border-[#111111] text-[#111111] px-6 py-3 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-[#111111] hover:text-white transition-colors"
+                  className="w-full sm:w-auto border border-[#111111] text-[#111111] px-6 py-3.5 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-[#111111] hover:text-white transition-colors"
                 >
                   {t.sendInquiry}
                 </button>
@@ -515,14 +597,16 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             </div>
           </div>
 
-          <div className="mt-16 pt-8 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] tracking-[0.2em] uppercase text-neutral-400">
-            <span>© {new Date().getFullYear()} {profile.name}</span>
+          <div className="mt-12 sm:mt-16 pt-8 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] tracking-[0.2em] uppercase text-neutral-400">
+            <span>
+              © {new Date().getFullYear()} {profile.name}
+            </span>
             <span>{stats.base}</span>
           </div>
         </div>
       </footer>
 
-      {/* High-Res Lightbox Modal for Desktop Casting Directors */}
+      {/* High-Res Lightbox Modal */}
       {lightboxIndex !== null && lightboxList[lightboxIndex] && (
         <div
           className="fixed inset-0 z-50 bg-white/98 flex items-center justify-center p-2 sm:p-6"
