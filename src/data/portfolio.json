@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T21:18:13.190Z",
+  "updatedAt": "2026-10-25T21:21:29.578Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -56,8 +56,8 @@
     },
     {
       "id": "book-02",
-      "src": "/photos/book-02-lace-doorway.webp",
-      "jpgSrc": "/photos/book-02-lace-doorway.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963286434-editorial-lace.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963286434-editorial-lace.jpg",
       "category": "book",
       "title": "Editorial Lace",
       "visible": true,
@@ -65,8 +65,8 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 2,
-      "width": 1068,
-      "height": 1600
+      "width": 1027,
+      "height": 1027
     },
     {
       "id": "book-03",
