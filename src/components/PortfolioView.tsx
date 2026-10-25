@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PortfolioData, PhotoItem } from '@/types/portfolio';
 import { generateCompCardPdf } from '@/lib/compCardPdf';
+import EditorialVideoPlayer from '@/components/EditorialVideoPlayer';
 import {
   Download,
   Instagram,
@@ -84,6 +85,17 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
     if (lightboxIndex === null) return;
     setLightboxIndex((lightboxIndex + 1) % lightboxList.length);
   };
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') prevLightbox();
+      if (e.key === 'ArrowRight') nextLightbox();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
 
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,7 +245,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
         className="max-w-[1440px] mx-auto px-2 sm:px-8 lg:px-12 pt-2 pb-8 sm:py-10 lg:py-14"
       >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-12 items-center">
-          {/* Hero Portrait — Sized on mobile (52dvh) so Face + Stats are BOTH visible immediately without scrolling in Instagram WebView */}
+          {/* Hero Portrait — Sized on mobile (54dvh) so Face + Stats are BOTH visible immediately without scrolling in Instagram WebView */}
           <div className="lg:col-span-7 w-full">
             {heroPhoto && (
               <div
@@ -441,23 +453,16 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             ))}
           </div>
 
-          {/* Natural Movement / Walk Video in Digitals Section */}
+          {/* Natural Movement / Walk Video in Digitals Section — Custom Editorial Video Player with Full Pre-Buffer */}
           {digitalVideo && digitalVideo.visible && digitalVideo.src && (
-            <div className="mt-6 sm:mt-12 max-w-md mx-auto">
-              <div className="text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-2.5 text-center">
+            <div className="mt-8 sm:mt-14 max-w-md mx-auto">
+              <div className="text-[10px] tracking-[0.22em] uppercase text-neutral-500 mb-3 text-center font-medium">
                 {digitalVideo.title}
               </div>
-              <div className="bg-white overflow-hidden">
-                <video
-                  src={digitalVideo.src}
-                  controls
-                  playsInline
-                  muted
-                  loop
-                  preload="metadata"
-                  className="w-full h-auto block"
-                />
-              </div>
+              <EditorialVideoPlayer
+                src={digitalVideo.src}
+                title={digitalVideo.title}
+              />
             </div>
           )}
 
@@ -606,18 +611,23 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
         </div>
       </footer>
 
-      {/* High-Res Lightbox Modal */}
+      {/* High-Res Lightbox Modal with Blurred Frosted Background */}
       {lightboxIndex !== null && lightboxList[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-50 bg-white/98 flex items-center justify-center p-2 sm:p-6"
+          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 animate-subtle-fade"
           onClick={closeLightbox}
         >
+          {/* Image Counter Pill */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 px-3 py-1.5 bg-white/80 backdrop-blur-md text-[#111111] text-[10px] tracking-[0.22em] uppercase font-medium pointer-events-none">
+            {lightboxIndex + 1} / {lightboxList.length}
+          </div>
+
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 text-[#111111] hover:opacity-60"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 bg-white/80 backdrop-blur-md text-[#111111] flex items-center justify-center hover:bg-white transition-colors"
             aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
 
           <button
@@ -625,10 +635,10 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
               e.stopPropagation();
               prevLightbox();
             }}
-            className="absolute left-2 sm:left-6 p-2 text-[#111111] hover:opacity-60"
+            className="absolute left-2 sm:left-6 w-10 h-10 bg-white/80 backdrop-blur-md text-[#111111] flex items-center justify-center hover:bg-white transition-colors"
             aria-label="Previous image"
           >
-            <ChevronLeft className="w-7 h-7" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -636,7 +646,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
             src={lightboxList[lightboxIndex].src}
             alt={lightboxList[lightboxIndex].title}
             onClick={(e) => e.stopPropagation()}
-            className={`max-h-[92vh] max-w-[92vw] object-contain ${
+            className={`max-h-[90vh] max-w-[90vw] object-contain shadow-2xl ${
               lightboxList[lightboxIndex].blackAndWhite ? 'grayscale contrast-[1.05]' : ''
             }`}
           />
@@ -646,10 +656,10 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
               e.stopPropagation();
               nextLightbox();
             }}
-            className="absolute right-2 sm:right-6 p-2 text-[#111111] hover:opacity-60"
+            className="absolute right-2 sm:right-6 w-10 h-10 bg-white/80 backdrop-blur-md text-[#111111] flex items-center justify-center hover:bg-white transition-colors"
             aria-label="Next image"
           >
-            <ChevronRight className="w-7 h-7" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
       )}
