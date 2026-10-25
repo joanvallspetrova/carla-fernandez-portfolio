@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T19:28:39.342Z",
+  "updatedAt": "2026-10-25T19:55:28.252Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -139,20 +139,6 @@
       "height": 1700
     },
     {
-      "id": "digital-03",
-      "src": "/photos/digital-03-profile-half.webp",
-      "jpgSrc": "/photos/digital-03-profile-half.jpg",
-      "category": "digitals",
-      "title": "Profile Structure",
-      "visible": true,
-      "blackAndWhite": false,
-      "span": "normal",
-      "aspectRatio": "portrait",
-      "order": 3,
-      "width": 1536,
-      "height": 2048
-    },
-    {
       "id": "digitals-1792955655911",
       "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.webp",
       "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.jpg",
@@ -165,6 +151,48 @@
       "order": 1,
       "width": 822,
       "height": 901
+    },
+    {
+      "id": "digitals-1792956634984",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792956634984-img-4916.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792956634984-img-4916.jpg",
+      "category": "digitals",
+      "title": "FULL LENGTH PROFILE",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 4,
+      "width": 896,
+      "height": 1188
+    },
+    {
+      "id": "digitals-1792957491675",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957491675-facetune-25-10-2026-20-41-10-3.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957491675-facetune-25-10-2026-20-41-10-3.jpg",
+      "category": "digitals",
+      "title": "SMILING HALF LENGTH ",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 5,
+      "width": 2458,
+      "height": 3277
+    },
+    {
+      "id": "digitals-1792957819847",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957819847-facetune-25-10-2026-20-49-46.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957819847-facetune-25-10-2026-20-49-46.jpg",
+      "category": "digitals",
+      "title": "SIDE PROFILE",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 6,
+      "width": 2782,
+      "height": 3709
     }
   ],
   "digitalVideo": {
