@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:49:23.794Z",
+  "updatedAt": "2026-10-25T22:49:30.401Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -98,8 +98,8 @@
     },
     {
       "id": "book-05",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968567911-light-form-editorial.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968567911-light-form-editorial.jpg",
       "category": "book",
       "title": "Light & Form Editorial",
       "visible": true,
@@ -108,7 +108,7 @@
       "aspectRatio": "portrait",
       "order": 3,
       "width": 801,
-      "height": 1068
+      "height": 1001
     },
     {
       "id": "book-06",
