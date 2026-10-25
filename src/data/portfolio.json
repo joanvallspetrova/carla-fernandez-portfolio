@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T21:22:15.449Z",
+  "updatedAt": "2026-10-25T21:22:45.221Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -33,10 +33,10 @@
   "compCard": {
     "frontPhotoId": "book-01",
     "backPhotoIds": [
-      "digital-04",
       "digitals-1792955655911",
       "book-07",
-      "book-05"
+      "book-05",
+      "book-02"
     ]
   },
   "photos": [
