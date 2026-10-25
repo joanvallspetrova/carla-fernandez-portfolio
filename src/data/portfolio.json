@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:38:55.093Z",
+  "updatedAt": "2026-10-25T22:39:58.595Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -42,8 +42,8 @@
   "photos": [
     {
       "id": "book-01",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967838815-beauty-close-up.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967838815-beauty-close-up.jpg",
+      "src": "/photos/book-01-beauty-closeup.webp",
+      "jpgSrc": "/photos/book-01-beauty-closeup.jpg",
       "category": "book",
       "title": "Beauty Close-up",
       "visible": true,
@@ -52,7 +52,7 @@
       "aspectRatio": "portrait",
       "order": 1,
       "width": 1134,
-      "height": 1512
+      "height": 1700
     },
     {
       "id": "book-02",
@@ -62,39 +62,39 @@
       "title": "Editorial Lace",
       "visible": true,
       "blackAndWhite": false,
-      "span": "wide",
+      "span": "normal",
       "aspectRatio": "portrait",
-      "order": 6,
+      "order": 2,
       "width": 1027,
       "height": 1027
     },
     {
       "id": "book-03",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967817413-urban-tailoring.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967817413-urban-tailoring.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963306166-urban-tailoring.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963306166-urban-tailoring.jpg",
       "category": "book",
       "title": "Urban Tailoring",
       "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 2,
+      "order": 3,
       "width": 954,
       "height": 1272
     },
     {
       "id": "book-04",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967749508-studio-portrait-i.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967749508-studio-portrait-i.jpg",
+      "src": "/photos/book-04-studio-portrait.webp",
+      "jpgSrc": "/photos/book-04-studio-portrait.jpg",
       "category": "book",
       "title": "Studio Portrait I",
       "visible": true,
       "blackAndWhite": true,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 3,
+      "order": 4,
       "width": 1134,
-      "height": 1512
+      "height": 1700
     },
     {
       "id": "book-05",
@@ -104,9 +104,9 @@
       "title": "Light & Form Editorial",
       "visible": true,
       "blackAndWhite": false,
-      "span": "normal",
+      "span": "wide",
       "aspectRatio": "portrait",
-      "order": 4,
+      "order": 5,
       "width": 801,
       "height": 1068
     },
@@ -120,14 +120,14 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 5,
+      "order": 6,
       "width": 886,
       "height": 1181
     },
     {
       "id": "book-07",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967886342-studio-portrait-ii.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967886342-studio-portrait-ii.jpg",
+      "src": "/photos/book-07-studio-three-quarter.webp",
+      "jpgSrc": "/photos/book-07-studio-three-quarter.jpg",
       "category": "book",
       "title": "Studio Portrait II",
       "visible": true,
@@ -135,8 +135,8 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 7,
-      "width": 851,
-      "height": 1512
+      "width": 1134,
+      "height": 1700
     },
     {
       "id": "digitals-1792955655911",
@@ -196,8 +196,8 @@
     },
     {
       "id": "digitals-1792963070424",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792963070424-digital-1577.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792963070424-digital-1577.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792967995728-digital-1577.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792967995728-digital-1577.jpg",
       "category": "digitals",
       "title": "Digital 1577",
       "visible": true,
@@ -205,8 +205,8 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 7,
-      "width": 1012,
-      "height": 1800
+      "width": 830,
+      "height": 1475
     },
     {
       "id": "digitals-1792966708639",
