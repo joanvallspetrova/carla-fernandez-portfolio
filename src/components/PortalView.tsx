@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { PortfolioData, PhotoItem } from '@/types/portfolio';
 import { generateCompCardPdf } from '@/lib/compCardPdf';
 import PhotoCropModal, { CropQueueItem } from '@/components/PhotoCropModal';
@@ -26,6 +26,7 @@ import {
   LogOut,
   Crop,
   Video,
+  Loader2,
 } from 'lucide-react';
 
 interface PortalViewProps {
@@ -49,9 +50,20 @@ export default function PortalView({ initialData }: PortalViewProps) {
   } | null>(null);
 
   useEffect(() => {
+    const savedPass = sessionStorage.getItem('carla_portal_pw') || '';
+    if (savedPass) setPassword(savedPass);
     if (document.cookie.includes('carla_portal_auth=authenticated')) {
       setAuthenticated(true);
     }
+    // Always fetch latest un-cached portfolio JSON on mount
+    fetch(`/api/portfolio?t=${Date.now()}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((fresh) => {
+        if (fresh && fresh.profile && Array.isArray(fresh.photos)) {
+          setData(fresh);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -64,6 +76,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
+        sessionStorage.setItem('carla_portal_pw', password);
         setAuthenticated(true);
       } else {
         setAuthError('Contraseña incorrecta');
@@ -75,9 +88,47 @@ export default function PortalView({ initialData }: PortalViewProps) {
 
   const handleLogout = async () => {
     await fetch('/api/auth', { method: 'DELETE' });
+    sessionStorage.removeItem('carla_portal_pw');
     setAuthenticated(false);
     setPassword('');
   };
+
+  const persistPortfolioData = useCallback(
+    async (payloadToSave: PortfolioData, customSuccessMsg?: string) => {
+      setIsSaving(true);
+      try {
+        const res = await fetch('/api/portfolio', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(password ? { 'x-portal-password': password } : {}),
+          },
+          body: JSON.stringify(payloadToSave),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || 'Error guardando cambios');
+        }
+        setHasUnsavedChanges(false);
+        setStatusBanner({
+          type: 'success',
+          text:
+            customSuccessMsg ||
+            (result.savedGitHub
+              ? '¡Cambios guardados y publicados en directo!'
+              : '¡Cambios guardados correctamente!'),
+        });
+      } catch (err: unknown) {
+        setStatusBanner({
+          type: 'error',
+          text: err instanceof Error ? err.message : 'Error al guardar en el servidor',
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [password]
+  );
 
   const updateData = (updater: (prev: PortfolioData) => PortfolioData) => {
     setData((prev) => updater(prev));
@@ -85,36 +136,11 @@ export default function PortalView({ initialData }: PortalViewProps) {
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    setStatusBanner(null);
-    try {
-      const res = await fetch('/api/portfolio', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(password ? { 'x-portal-password': password } : {}),
-        },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        throw new Error(result.error || 'Error guardando cambios');
-      }
-      setHasUnsavedChanges(false);
-      setStatusBanner({
-        type: 'success',
-        text: result.savedGitHub
-          ? '¡Cambios guardados y publicados en directo!'
-          : '¡Cambios guardados correctamente!',
-      });
-    } catch (err: unknown) {
-      setStatusBanner({
-        type: 'error',
-        text: err instanceof Error ? err.message : 'Error al guardar',
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    setStatusBanner({
+      type: 'info',
+      text: 'Guardando y publicando cambios...',
+    });
+    await persistPortfolioData(data);
   };
 
   // Step 1 when selecting files: open the Instagram-style Crop & Frame Modal
@@ -156,7 +182,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
     ]);
   };
 
-  // Step 2: Upload the framed/cropped files returned by PhotoCropModal
+  // Step 2: Upload the framed/cropped files returned by PhotoCropModal AND auto-publish immediately!
   const handleCropComplete = async (
     results: {
       existingPhotoId?: string;
@@ -178,7 +204,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
     setIsUploading(true);
     setStatusBanner({
       type: 'info',
-      text: `Subiendo ${results.length} foto(s) con el encuadre seleccionado...`,
+      text: `Subiendo y publicando ${results.length} foto(s)... Espera unos segundos.`,
     });
 
     try {
@@ -208,46 +234,46 @@ export default function PortalView({ initialData }: PortalViewProps) {
         }
       }
 
-      updateData((prev) => {
-        let updatedPhotos = prev.photos.map((p) => {
-          const replacement = updatedMap.get(p.id);
-          if (!replacement) return p;
-          return {
-            ...p,
-            src: replacement.src,
-            jpgSrc: replacement.jpgSrc,
-            width: replacement.width,
-            height: replacement.height,
-            aspectRatio: replacement.aspectRatio,
-            span: replacement.aspectRatio === 'landscape' ? 'wide' : p.span,
-          };
-        });
-
-        if (newlyAdded.length > 0) {
-          const cat = newlyAdded[0].category;
-          const existingCat = updatedPhotos.filter((p) => p.category === cat);
-          const maxOrder = existingCat.reduce((max, p) => Math.max(max, p.order), 0);
-          const numbered = newlyAdded.map((p, idx) => ({
-            ...p,
-            order: maxOrder + idx + 1,
-          }));
-          updatedPhotos = [...updatedPhotos, ...numbered];
-        }
-
+      // Compute next state and immediately save to GitHub so Carla doesn't have to press Save twice
+      let updatedPhotos = data.photos.map((p) => {
+        const replacement = updatedMap.get(p.id);
+        if (!replacement) return p;
         return {
-          ...prev,
-          photos: updatedPhotos,
+          ...p,
+          src: replacement.src,
+          jpgSrc: replacement.jpgSrc,
+          width: replacement.width,
+          height: replacement.height,
+          aspectRatio: replacement.aspectRatio,
+          span: replacement.aspectRatio === 'landscape' ? 'wide' : p.span,
         };
       });
 
-      setStatusBanner({
-        type: 'success',
-        text: `¡Encuadre aplicado! Pulsa "Guardar Cambios" arriba para publicar en la web.`,
-      });
+      if (newlyAdded.length > 0) {
+        const cat = newlyAdded[0].category;
+        const existingCat = updatedPhotos.filter((p) => p.category === cat);
+        const maxOrder = existingCat.reduce((max, p) => Math.max(max, p.order), 0);
+        const numbered = newlyAdded.map((p, idx) => ({
+          ...p,
+          order: maxOrder + idx + 1,
+        }));
+        updatedPhotos = [...updatedPhotos, ...numbered];
+      }
+
+      const nextData: PortfolioData = {
+        ...data,
+        photos: updatedPhotos,
+      };
+
+      setData(nextData);
+      await persistPortfolioData(
+        nextData,
+        '¡Foto subida, encuadrada y publicada directamente en la web!'
+      );
     } catch (err: unknown) {
       setStatusBanner({
         type: 'error',
-        text: err instanceof Error ? err.message : 'Error al subir archivo',
+        text: err instanceof Error ? err.message : 'Error al subir la foto',
       });
     } finally {
       setIsUploading(false);
@@ -285,7 +311,9 @@ export default function PortalView({ initialData }: PortalViewProps) {
     setIsUploadingVideo(true);
     setStatusBanner({
       type: 'info',
-      text: `Subiendo vídeo "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`,
+      text: `Subiendo y publicando vídeo "${file.name}" (${(file.size / (1024 * 1024)).toFixed(
+        1
+      )} MB)...`,
     });
 
     try {
@@ -303,7 +331,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
 
       let videoUrl = `/photos/${filename}`;
 
-      // Upload directly to GitHub API from browser so files > 4.5MB work on Vercel
       if (cfg.token) {
         const base64Content = await fileToBase64(file);
         const repoPath = `public/photos/${filename}`;
@@ -336,7 +363,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
         }
       }
 
-      // If running locally, also save to local public/photos folder
       if (!cfg.isVercel) {
         const formData = new FormData();
         formData.append('file', file);
@@ -351,19 +377,20 @@ export default function PortalView({ initialData }: PortalViewProps) {
         }
       }
 
-      updateData((prev) => ({
-        ...prev,
+      const nextData: PortfolioData = {
+        ...data,
         digitalVideo: {
           src: videoUrl,
           visible: true,
-          title: prev.digitalVideo?.title || '360° Natural Light Digitals',
+          title: data.digitalVideo?.title || '360° Natural Light Digitals',
         },
-      }));
+      };
 
-      setStatusBanner({
-        type: 'success',
-        text: '¡Vídeo subido correctamente! Pulsa "Guardar Cambios" arriba para publicarlo.',
-      });
+      setData(nextData);
+      await persistPortfolioData(
+        nextData,
+        '¡Vídeo subido y publicado directamente en la web!'
+      );
     } catch (err: unknown) {
       setStatusBanner({
         type: 'error',
@@ -375,20 +402,18 @@ export default function PortalView({ initialData }: PortalViewProps) {
     }
   };
 
-  const handleDeleteVideo = () => {
+  const handleDeleteVideo = async () => {
     if (!window.confirm('¿Seguro que quieres eliminar este vídeo del portfolio?')) return;
-    updateData((prev) => ({
-      ...prev,
+    const nextData: PortfolioData = {
+      ...data,
       digitalVideo: {
-        ...prev.digitalVideo,
+        ...data.digitalVideo,
         src: '',
         visible: false,
       },
-    }));
-    setStatusBanner({
-      type: 'info',
-      text: 'Vídeo eliminado. Pulsa "Guardar Cambios" arriba para aplicar el cambio en la web.',
-    });
+    };
+    setData(nextData);
+    await persistPortfolioData(nextData, '¡Vídeo eliminado de la web!');
   };
 
   const movePhoto = (photoId: string, direction: 'up' | 'down') => {
@@ -434,12 +459,14 @@ export default function PortalView({ initialData }: PortalViewProps) {
     }));
   };
 
-  const deletePhoto = (photoId: string) => {
+  const deletePhoto = async (photoId: string) => {
     if (!window.confirm('¿Seguro que quieres eliminar esta foto del portfolio?')) return;
-    updateData((prev) => ({
-      ...prev,
-      photos: prev.photos.filter((p) => p.id !== photoId),
-    }));
+    const nextData: PortfolioData = {
+      ...data,
+      photos: data.photos.filter((p) => p.id !== photoId),
+    };
+    setData(nextData);
+    await persistPortfolioData(nextData, '¡Foto eliminada y web actualizada!');
   };
 
   const toggleCompCardBackPhoto = (photoId: string) => {
@@ -527,7 +554,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
   const activeDigitalsCount = digitalPhotos.filter((p) => p.visible).length;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-20">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] pb-28">
       {/* Instagram-style Photo Crop & Frame Modal */}
       {cropQueue && cropQueue.length > 0 && (
         <PhotoCropModal
@@ -537,26 +564,74 @@ export default function PortalView({ initialData }: PortalViewProps) {
         />
       )}
 
+      {/* Full-Screen Mobile Progress Overlay during Photo/Video Upload */}
+      {(isUploading || isUploadingVideo) && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white p-6 max-w-sm w-full text-center space-y-3 border border-neutral-200 shadow-2xl">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#111111]" />
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#111111]">
+              Subiendo y Publicando...
+            </h3>
+            <p className="text-xs text-neutral-500">
+              Optimizando archivo en alta resolución y guardándolo en la web. No cierres esta
+              pestaña.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bottom Toast Notification (Always visible on mobile regardless of scroll position) */}
+      {statusBanner && (
+        <div className="fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 sm:max-w-md z-40 shadow-xl">
+          <div
+            className={`p-4 border flex items-center justify-between text-xs tracking-wide shadow-lg ${
+              statusBanner.type === 'success'
+                ? 'bg-emerald-950 border-emerald-700 text-white'
+                : statusBanner.type === 'error'
+                ? 'bg-red-950 border-red-700 text-white'
+                : 'bg-[#111111] border-neutral-700 text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              {statusBanner.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : statusBanner.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              ) : (
+                <Loader2 className="w-4 h-4 animate-spin text-neutral-300 shrink-0" />
+              )}
+              <span>{statusBanner.text}</span>
+            </div>
+            <button
+              onClick={() => setStatusBanner(null)}
+              className="text-[10px] uppercase tracking-widest underline ml-4 text-neutral-300 hover:text-white"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Sticky Admin Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="font-serif text-lg sm:text-xl tracking-[0.12em] uppercase truncate">
+      <header className="sticky top-0 z-30 bg-white border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-3 sm:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="font-serif text-base sm:text-xl tracking-[0.12em] uppercase truncate">
               PORTAL · CARLA
             </span>
             {hasUnsavedChanges && (
-              <span className="hidden sm:inline-block bg-amber-100 text-amber-900 text-[10px] tracking-wider uppercase px-2.5 py-0.5 font-medium">
-                Cambios sin guardar
+              <span className="bg-amber-100 text-amber-900 text-[9px] sm:text-[10px] tracking-wider uppercase px-2 py-0.5 font-medium shrink-0">
+                Sin guardar
               </span>
             )}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <a
-              href="/"
+              href="https://portfolio.carlafernandezoliva.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-neutral-300 px-3 py-2 text-[11px] tracking-[0.14em] uppercase hover:border-[#111111] transition-colors"
+              className="inline-flex items-center gap-1.5 border border-neutral-300 px-2.5 sm:px-3 py-2 text-[10px] sm:text-[11px] tracking-[0.14em] uppercase hover:border-[#111111] transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Ver Web Pública</span>
@@ -564,14 +639,18 @@ export default function PortalView({ initialData }: PortalViewProps) {
 
             <button
               onClick={handleSave}
-              disabled={isSaving}
-              className={`inline-flex items-center gap-2 px-4 sm:px-6 py-2 text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
+              disabled={isSaving || isUploading || isUploadingVideo}
+              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 text-[10px] sm:text-[11px] tracking-[0.16em] uppercase font-medium transition-colors ${
                 hasUnsavedChanges
-                  ? 'bg-[#111111] text-white hover:bg-neutral-800'
-                  : 'bg-neutral-800 text-white hover:bg-[#111111]'
+                  ? 'bg-amber-500 text-black hover:bg-amber-400 font-semibold'
+                  : 'bg-[#111111] text-white hover:bg-neutral-800'
               } disabled:opacity-50`}
             >
-              <Save className="w-3.5 h-3.5" />
+              {isSaving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
               <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>
             </button>
 
@@ -586,107 +665,76 @@ export default function PortalView({ initialData }: PortalViewProps) {
         </div>
       </header>
 
-      {/* Status Notification Banner */}
-      {statusBanner && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-4">
-          <div
-            className={`p-3.5 border flex items-center justify-between text-xs tracking-wide ${
-              statusBanner.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                : statusBanner.type === 'error'
-                ? 'bg-red-50 border-red-200 text-red-800'
-                : 'bg-neutral-100 border-neutral-300 text-neutral-800'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {statusBanner.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-              ) : (
-                <AlertCircle className="w-4 h-4 shrink-0" />
-              )}
-              <span>{statusBanner.text}</span>
-            </div>
-            <button
-              onClick={() => setStatusBanner(null)}
-              className="text-[10px] uppercase tracking-widest underline ml-4"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Navigation Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-1.5 border border-neutral-200">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 pt-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 bg-white p-1.5 border border-neutral-200">
           <button
             onClick={() => setActiveTab('book')}
-            className={`flex items-center justify-center gap-2 py-3 px-3 text-xs tracking-[0.14em] uppercase font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 py-3 px-2 text-[11px] sm:text-xs tracking-[0.12em] uppercase font-medium transition-colors ${
               activeTab === 'book'
                 ? 'bg-[#111111] text-white'
                 : 'text-neutral-600 hover:bg-neutral-100'
             }`}
           >
-            <ImageIcon className="w-3.5 h-3.5" />
+            <ImageIcon className="w-3.5 h-3.5 shrink-0" />
             <span>1. Book ({activeBookCount})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('digitals')}
-            className={`flex items-center justify-center gap-2 py-3 px-3 text-xs tracking-[0.14em] uppercase font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 py-3 px-2 text-[11px] sm:text-xs tracking-[0.12em] uppercase font-medium transition-colors ${
               activeTab === 'digitals'
                 ? 'bg-[#111111] text-white'
                 : 'text-neutral-600 hover:bg-neutral-100'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" />
+            <Camera className="w-3.5 h-3.5 shrink-0" />
             <span>2. Digitals ({activeDigitalsCount})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('stats')}
-            className={`flex items-center justify-center gap-2 py-3 px-3 text-xs tracking-[0.14em] uppercase font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 py-3 px-2 text-[11px] sm:text-xs tracking-[0.12em] uppercase font-medium transition-colors ${
               activeTab === 'stats'
                 ? 'bg-[#111111] text-white'
                 : 'text-neutral-600 hover:bg-neutral-100'
             }`}
           >
-            <Ruler className="w-3.5 h-3.5" />
-            <span>3. Medidas y Contacto</span>
+            <Ruler className="w-3.5 h-3.5 shrink-0" />
+            <span>3. Medidas</span>
           </button>
 
           <button
             onClick={() => setActiveTab('compcard')}
-            className={`flex items-center justify-center gap-2 py-3 px-3 text-xs tracking-[0.14em] uppercase font-medium transition-colors ${
+            className={`flex items-center justify-center gap-2 py-3 px-2 text-[11px] sm:text-xs tracking-[0.12em] uppercase font-medium transition-colors ${
               activeTab === 'compcard'
                 ? 'bg-[#111111] text-white'
                 : 'text-neutral-600 hover:bg-neutral-100'
             }`}
           >
-            <FileText className="w-3.5 h-3.5" />
-            <span>4. Comp Card (PDF)</span>
+            <FileText className="w-3.5 h-3.5 shrink-0" />
+            <span>4. Comp Card</span>
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-8 pt-6">
         {/* TAB 1: BOOK / GALERÍA PRINCIPAL */}
         {activeTab === 'book' && (
           <div className="space-y-6">
-            <div className="bg-white border border-neutral-200 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white border border-neutral-200 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.15em]">
                   Galería Principal (Book) y Foto de Portada
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1">
                   Al subir una foto podrás elegir el formato (<strong>3:4, 4:5, 9:16, 2:3</strong>,
-                  etc.) y moverla para elegir el encuadre exacto. También puedes re-encuadrar
-                  cualquier foto pulsando <strong>Encuadrar</strong>.
+                  etc.), encuadrarla con el dedo y se publicará automáticamente.
                 </p>
               </div>
 
-              <label className="cursor-pointer inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-5 py-3 text-xs tracking-[0.16em] uppercase font-medium hover:bg-neutral-800 transition-colors shrink-0">
+              <label className="cursor-pointer inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-5 py-3.5 text-xs tracking-[0.16em] uppercase font-medium hover:bg-neutral-800 transition-colors shrink-0">
                 <Upload className="w-4 h-4" />
                 <span>{isUploading ? 'Subiendo...' : 'Subir Fotos al Book'}</span>
                 <input
@@ -753,7 +801,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
                       />
 
                       <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-neutral-100">
-                        {/* Set as Hero */}
                         <button
                           onClick={() =>
                             updateData((prev) => ({ ...prev, heroPhotoId: photo.id }))
@@ -768,7 +815,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
                           <span>{isHero ? 'Portada' : 'Hacer Portada'}</span>
                         </button>
 
-                        {/* Re-Crop / Frame Button */}
                         <button
                           onClick={() => handleReframeExisting(photo)}
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] tracking-wider uppercase border border-neutral-200 text-neutral-700 hover:border-[#111111]"
@@ -778,7 +824,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
                           <span>Encuadrar</span>
                         </button>
 
-                        {/* Toggle B&W */}
                         <button
                           onClick={() => togglePhotoField(photo.id, 'blackAndWhite')}
                           className={`inline-flex items-center gap-1 px-2 py-1.5 text-[10px] tracking-wider uppercase border ${
@@ -791,7 +836,6 @@ export default function PortalView({ initialData }: PortalViewProps) {
                           <span>B&N</span>
                         </button>
 
-                        {/* Toggle Wide / Normal */}
                         <button
                           onClick={() => togglePhotoSpan(photo.id)}
                           className={`px-2 py-1.5 text-[10px] tracking-wider uppercase border ${
@@ -862,18 +906,19 @@ export default function PortalView({ initialData }: PortalViewProps) {
         {/* TAB 2: DIGITALS / POLAROIDS */}
         {activeTab === 'digitals' && (
           <div className="space-y-6">
-            <div className="bg-white border border-neutral-200 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white border border-neutral-200 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.15em]">
                   Digitals / Polaroids (Luz Natural · Cero Retoque)
                 </h2>
                 <p className="text-xs text-neutral-500 mt-1">
                   Al subir tus nuevas Digitals podrás encuadrarlas (<strong>3:4, 4:5, 9:16</strong>,
-                  etc.) y centrarlas exactamente como en Instagram antes de publicarlas.
+                  etc.) y al pulsar <strong>Confirmar y Publicar</strong> quedarán guardadas en la
+                  web automáticamente.
                 </p>
               </div>
 
-              <label className="cursor-pointer inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-5 py-3 text-xs tracking-[0.16em] uppercase font-medium hover:bg-neutral-800 transition-colors shrink-0">
+              <label className="cursor-pointer inline-flex items-center justify-center gap-2 bg-[#111111] text-white px-5 py-3.5 text-xs tracking-[0.16em] uppercase font-medium hover:bg-neutral-800 transition-colors shrink-0">
                 <Upload className="w-4 h-4" />
                 <span>{isUploading ? 'Subiendo...' : 'Subir Nuevas Digitals'}</span>
                 <input
@@ -887,8 +932,8 @@ export default function PortalView({ initialData }: PortalViewProps) {
               </label>
             </div>
 
-            {/* Video Digitals Management Card (Same functionality as Photos: Preview, Replace/Upload, Hide/Show, Delete) */}
-            <div className="bg-white border border-neutral-200 p-5 sm:p-6">
+            {/* Video Digitals Management Card */}
+            <div className="bg-white border border-neutral-200 p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 bg-neutral-100 flex items-center justify-center shrink-0 mt-0.5">
@@ -1133,7 +1178,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1153,7 +1198,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1173,7 +1218,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1193,7 +1238,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1213,7 +1258,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1233,7 +1278,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1256,7 +1301,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1279,7 +1324,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1302,7 +1347,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1325,7 +1370,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1345,7 +1390,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
               </div>
@@ -1376,7 +1421,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         profile: { ...prev.profile, name: e.target.value },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1396,7 +1441,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1416,7 +1461,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
 
@@ -1436,7 +1481,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
                         },
                       }))
                     }
-                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#111111]"
+                    className="w-full border border-neutral-300 px-3.5 py-2.5 text-base sm:text-xs focus:outline-none focus:border-[#111111]"
                   />
                 </div>
               </div>
@@ -1447,7 +1492,7 @@ export default function PortalView({ initialData }: PortalViewProps) {
         {/* TAB 4: COMP CARD (PDF) CONFIGURATOR */}
         {activeTab === 'compcard' && (
           <div className="space-y-6">
-            <div className="bg-white border border-neutral-200 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white border border-neutral-200 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.15em]">
                   Diseño de tu Comp Card (PDF Descargable)
