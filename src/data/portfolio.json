@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T20:25:53.368Z",
+  "updatedAt": "2026-10-25T20:26:37.495Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -7,13 +7,13 @@
     "stats": {
       "height": "160 cm",
       "bust": "84 cm",
-      "waist": "62 cm",
-      "hips": "90 cm",
+      "waist": "65 cm",
+      "hips": "92 cm",
       "shoe": "36 EU",
-      "dress": "36 EU / S",
+      "dress": "34/36 EU / S",
       "hair": {
-        "en": "Blonde",
-        "es": "Rubio"
+        "en": "Dark blonde",
+        "es": "Rubio oscuro"
       },
       "eyes": {
         "en": "Green / Blue",
@@ -24,7 +24,7 @@
     "contact": {
       "email": "contact@carlafernandezoliva.com",
       "instagram": "@carlafernandezoliva",
-      "instagramUrl": "https://www.instagram.com/carlafernandezoliva",
+      "instagramUrl": "https://www.instagram.com/carla_fernandeez",
       "agencyName": "",
       "agencyUrl": ""
     }
