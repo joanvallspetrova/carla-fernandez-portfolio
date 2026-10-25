@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:38:08.927Z",
+  "updatedAt": "2026-10-25T22:38:55.093Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -102,7 +102,7 @@
       "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.jpg",
       "category": "book",
       "title": "Light & Form Editorial",
-      "visible": false,
+      "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
@@ -116,7 +116,7 @@
       "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963328700-swim-commercial.jpg",
       "category": "book",
       "title": "Swim / Commercial",
-      "visible": false,
+      "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
