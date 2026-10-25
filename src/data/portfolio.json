@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T20:33:11.632Z",
+  "updatedAt": "2026-10-25T20:44:26.946Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -140,8 +140,8 @@
     },
     {
       "id": "digitals-1792955655911",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960997563-close-up-portrait.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960997563-close-up-portrait.jpg",
       "category": "digitals",
       "title": "Close-up portrait",
       "visible": true,
@@ -149,7 +149,7 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 1,
-      "width": 822,
+      "width": 676,
       "height": 901
     },
     {
@@ -168,8 +168,8 @@
     },
     {
       "id": "digitals-1792957491675",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957491675-facetune-25-10-2026-20-41-10-3.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957491675-facetune-25-10-2026-20-41-10-3.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960992484-smiling-half-length.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960992484-smiling-half-length.jpg",
       "category": "digitals",
       "title": "SMILING HALF LENGTH ",
       "visible": true,
@@ -177,13 +177,13 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 5,
-      "width": 2458,
-      "height": 3277
+      "width": 1250,
+      "height": 1667
     },
     {
       "id": "digitals-1792957819847",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957819847-facetune-25-10-2026-20-49-46.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792957819847-facetune-25-10-2026-20-49-46.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960979561-side-profile.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792960979561-side-profile.jpg",
       "category": "digitals",
       "title": "SIDE PROFILE",
       "visible": true,
@@ -191,13 +191,13 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 6,
-      "width": 2782,
-      "height": 3709
+      "width": 1053,
+      "height": 1404
     },
     {
       "id": "digitals-1792959631542",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792959631542-facetune-25-10-2026-21-00-38.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792959631542-facetune-25-10-2026-21-00-38.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792961016686-full-length-frontal.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792961016686-full-length-frontal.jpg",
       "category": "digitals",
       "title": "FULL LENGTH FRONTAL",
       "visible": true,
@@ -205,8 +205,8 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 8,
-      "width": 1914,
-      "height": 3402
+      "width": 855,
+      "height": 1520
     }
   ],
   "digitalVideo": {
