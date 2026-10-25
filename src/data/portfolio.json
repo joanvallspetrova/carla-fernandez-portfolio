@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T21:21:49.166Z",
+  "updatedAt": "2026-10-25T21:22:11.339Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -112,8 +112,8 @@
     },
     {
       "id": "book-06",
-      "src": "/photos/book-06-terracotta-swim.webp",
-      "jpgSrc": "/photos/book-06-terracotta-swim.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963328700-swim-commercial.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963328700-swim-commercial.jpg",
       "category": "book",
       "title": "Swim / Commercial",
       "visible": true,
@@ -121,8 +121,8 @@
       "span": "normal",
       "aspectRatio": "portrait",
       "order": 6,
-      "width": 1134,
-      "height": 1700
+      "width": 886,
+      "height": 1181
     },
     {
       "id": "book-07",
