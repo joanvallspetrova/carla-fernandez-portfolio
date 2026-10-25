@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:37:21.760Z",
+  "updatedAt": "2026-10-25T22:38:08.927Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -64,7 +64,7 @@
       "blackAndWhite": false,
       "span": "wide",
       "aspectRatio": "portrait",
-      "order": 7,
+      "order": 6,
       "width": 1027,
       "height": 1027
     },
@@ -78,7 +78,7 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 3,
+      "order": 2,
       "width": 954,
       "height": 1272
     },
@@ -92,7 +92,7 @@
       "blackAndWhite": true,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 4,
+      "order": 3,
       "width": 1134,
       "height": 1512
     },
@@ -102,11 +102,11 @@
       "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963649122-light-form-editorial.jpg",
       "category": "book",
       "title": "Light & Form Editorial",
-      "visible": true,
+      "visible": false,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 5,
+      "order": 4,
       "width": 801,
       "height": 1068
     },
@@ -116,26 +116,26 @@
       "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792963328700-swim-commercial.jpg",
       "category": "book",
       "title": "Swim / Commercial",
-      "visible": true,
+      "visible": false,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 6,
+      "order": 5,
       "width": 886,
       "height": 1181
     },
     {
       "id": "book-07",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967832208-studio-portrait-ii.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967832208-studio-portrait-ii.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967886342-studio-portrait-ii.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792967886342-studio-portrait-ii.jpg",
       "category": "book",
       "title": "Studio Portrait II",
       "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 2,
-      "width": 1134,
+      "order": 7,
+      "width": 851,
       "height": 1512
     },
     {
