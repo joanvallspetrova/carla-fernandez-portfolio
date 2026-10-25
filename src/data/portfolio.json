@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T22:46:46.404Z",
+  "updatedAt": "2026-10-25T22:47:21.556Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -64,21 +64,21 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 7,
+      "order": 8,
       "width": 822,
       "height": 822
     },
     {
       "id": "book-03",
-      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968271170-urban-tailoring.webp",
-      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968271170-urban-tailoring.jpg",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968438873-urban-tailoring.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/book-1792968438873-urban-tailoring.jpg",
       "category": "book",
       "title": "Urban Tailoring",
       "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 2,
+      "order": 7,
       "width": 895,
       "height": 1193
     },
@@ -92,7 +92,7 @@
       "blackAndWhite": true,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 3,
+      "order": 2,
       "width": 1134,
       "height": 1700
     },
@@ -106,7 +106,7 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 4,
+      "order": 3,
       "width": 801,
       "height": 1068
     },
@@ -120,7 +120,7 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 5,
+      "order": 4,
       "width": 886,
       "height": 1181
     },
@@ -134,7 +134,7 @@
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 8,
+      "order": 5,
       "width": 1134,
       "height": 1700
     },
