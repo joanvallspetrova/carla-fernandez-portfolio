@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T18:35:00.000Z",
+  "updatedAt": "2026-10-25T19:28:39.342Z",
   "profile": {
     "name": "CARLA FERNÁNDEZ OLIVA",
     "firstName": "CARLA",
@@ -139,34 +139,6 @@
       "height": 1700
     },
     {
-      "id": "digital-01",
-      "src": "/photos/digital-01-front-closeup.webp",
-      "jpgSrc": "/photos/digital-01-front-closeup.jpg",
-      "category": "digitals",
-      "title": "Headshot Neutral",
-      "visible": true,
-      "blackAndWhite": false,
-      "span": "normal",
-      "aspectRatio": "portrait",
-      "order": 1,
-      "width": 1536,
-      "height": 2048
-    },
-    {
-      "id": "digital-02",
-      "src": "/photos/digital-02-front-smile.webp",
-      "jpgSrc": "/photos/digital-02-front-smile.jpg",
-      "category": "digitals",
-      "title": "Half Length Natural",
-      "visible": true,
-      "blackAndWhite": false,
-      "span": "normal",
-      "aspectRatio": "portrait",
-      "order": 2,
-      "width": 1200,
-      "height": 1600
-    },
-    {
       "id": "digital-03",
       "src": "/photos/digital-03-profile-half.webp",
       "jpgSrc": "/photos/digital-03-profile-half.jpg",
@@ -181,18 +153,18 @@
       "height": 2048
     },
     {
-      "id": "digital-04",
-      "src": "/photos/digital-04-full-profile.webp",
-      "jpgSrc": "/photos/digital-04-full-profile.jpg",
+      "id": "digitals-1792955655911",
+      "src": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.webp",
+      "jpgSrc": "https://raw.githubusercontent.com/joanvallspetrova/carla-fernandez-portfolio/main/public/photos/digitals-1792955655911-facetune-25-10-2026-20-09-20.jpg",
       "category": "digitals",
-      "title": "Full Length Proportions",
+      "title": "Close-up portrait",
       "visible": true,
       "blackAndWhite": false,
       "span": "normal",
       "aspectRatio": "portrait",
-      "order": 4,
-      "width": 1536,
-      "height": 2048
+      "order": 1,
+      "width": 822,
+      "height": 901
     }
   ],
   "digitalVideo": {
