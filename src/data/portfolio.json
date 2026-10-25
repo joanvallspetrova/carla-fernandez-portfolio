@@ -1,0 +1,203 @@
+{
+  "updatedAt": "2026-10-25T18:35:00.000Z",
+  "profile": {
+    "name": "CARLA FERNÁNDEZ OLIVA",
+    "firstName": "CARLA",
+    "lastName": "FERNÁNDEZ OLIVA",
+    "stats": {
+      "height": "160 cm",
+      "bust": "84 cm",
+      "waist": "62 cm",
+      "hips": "90 cm",
+      "shoe": "36 EU",
+      "dress": "36 EU / S",
+      "hair": {
+        "en": "Blonde",
+        "es": "Rubio"
+      },
+      "eyes": {
+        "en": "Green / Blue",
+        "es": "Verde / Azul"
+      },
+      "base": "Barcelona"
+    },
+    "contact": {
+      "email": "contact@carlafernandezoliva.com",
+      "instagram": "@carlafernandezoliva",
+      "instagramUrl": "https://www.instagram.com/carlafernandezoliva",
+      "agencyName": "",
+      "agencyUrl": ""
+    }
+  },
+  "heroPhotoId": "book-01",
+  "compCard": {
+    "frontPhotoId": "book-01",
+    "backPhotoIds": [
+      "book-02",
+      "book-03",
+      "book-04",
+      "digital-04"
+    ]
+  },
+  "photos": [
+    {
+      "id": "book-01",
+      "src": "/photos/book-01-beauty-closeup.webp",
+      "jpgSrc": "/photos/book-01-beauty-closeup.jpg",
+      "category": "book",
+      "title": "Beauty Close-up",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 1,
+      "width": 1134,
+      "height": 1700
+    },
+    {
+      "id": "book-02",
+      "src": "/photos/book-02-lace-doorway.webp",
+      "jpgSrc": "/photos/book-02-lace-doorway.jpg",
+      "category": "book",
+      "title": "Editorial Lace",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 2,
+      "width": 1068,
+      "height": 1600
+    },
+    {
+      "id": "book-03",
+      "src": "/photos/book-03-cafe-editorial.webp",
+      "jpgSrc": "/photos/book-03-cafe-editorial.jpg",
+      "category": "book",
+      "title": "Urban Tailoring",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 3,
+      "width": 992,
+      "height": 1600
+    },
+    {
+      "id": "book-04",
+      "src": "/photos/book-04-studio-portrait.webp",
+      "jpgSrc": "/photos/book-04-studio-portrait.jpg",
+      "category": "book",
+      "title": "Studio Portrait I",
+      "visible": true,
+      "blackAndWhite": true,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 4,
+      "width": 1134,
+      "height": 1700
+    },
+    {
+      "id": "book-05",
+      "src": "/photos/book-05-mondrian-shadow.webp",
+      "jpgSrc": "/photos/book-05-mondrian-shadow.jpg",
+      "category": "book",
+      "title": "Light & Form Editorial",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "wide",
+      "aspectRatio": "landscape",
+      "order": 5,
+      "width": 1600,
+      "height": 1068
+    },
+    {
+      "id": "book-06",
+      "src": "/photos/book-06-terracotta-swim.webp",
+      "jpgSrc": "/photos/book-06-terracotta-swim.jpg",
+      "category": "book",
+      "title": "Swim / Commercial",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 6,
+      "width": 1134,
+      "height": 1700
+    },
+    {
+      "id": "book-07",
+      "src": "/photos/book-07-studio-three-quarter.webp",
+      "jpgSrc": "/photos/book-07-studio-three-quarter.jpg",
+      "category": "book",
+      "title": "Studio Portrait II",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 7,
+      "width": 1134,
+      "height": 1700
+    },
+    {
+      "id": "digital-01",
+      "src": "/photos/digital-01-front-closeup.webp",
+      "jpgSrc": "/photos/digital-01-front-closeup.jpg",
+      "category": "digitals",
+      "title": "Headshot Neutral",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 1,
+      "width": 1536,
+      "height": 2048
+    },
+    {
+      "id": "digital-02",
+      "src": "/photos/digital-02-front-smile.webp",
+      "jpgSrc": "/photos/digital-02-front-smile.jpg",
+      "category": "digitals",
+      "title": "Half Length Natural",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 2,
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": "digital-03",
+      "src": "/photos/digital-03-profile-half.webp",
+      "jpgSrc": "/photos/digital-03-profile-half.jpg",
+      "category": "digitals",
+      "title": "Profile Structure",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 3,
+      "width": 1536,
+      "height": 2048
+    },
+    {
+      "id": "digital-04",
+      "src": "/photos/digital-04-full-profile.webp",
+      "jpgSrc": "/photos/digital-04-full-profile.jpg",
+      "category": "digitals",
+      "title": "Full Length Proportions",
+      "visible": true,
+      "blackAndWhite": false,
+      "span": "normal",
+      "aspectRatio": "portrait",
+      "order": 4,
+      "width": 1536,
+      "height": 2048
+    }
+  ],
+  "digitalVideo": {
+    "src": "/photos/digital-video-01.mp4",
+    "visible": true,
+    "title": "360° Natural Light Digitals"
+  }
+}
