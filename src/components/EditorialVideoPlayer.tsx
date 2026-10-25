@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Loader2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize2, X, Loader2 } from 'lucide-react';
 
 interface EditorialVideoPlayerProps {
   src: string;
@@ -10,7 +10,7 @@ interface EditorialVideoPlayerProps {
 
 export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inlinePlaceholderRef = useRef<HTMLDivElement | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -22,6 +22,8 @@ export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlaye
   const [duration, setDuration] = useState(0);
   const [bufferedPercent, setBufferedPercent] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [inlineHeight, setInlineHeight] = useState<number | null>(null);
   const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Pre-fetch the entire video in the background into browser RAM (Blob) so it plays 100% smoothly without mid-stream stalls
@@ -84,7 +86,7 @@ export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlaye
     };
   }, [src]);
 
-  // Swap to in-memory blobSrc smoothly when ready if not currently mid-play, or preserve currentTime
+  // Swap to in-memory blobSrc smoothly when ready, preserving playback state and currentTime
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !blobSrc) return;
@@ -99,6 +101,26 @@ export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlaye
       }
     }
   }, [blobSrc]);
+
+  // Close expanded lightbox view on Escape key and lock body scroll while expanded
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsExpanded(false);
+      }
+    };
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isExpanded]);
 
   const scheduleHideControls = () => {
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
@@ -139,22 +161,13 @@ export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlaye
     setIsMuted(video.muted);
   };
 
-  const handleFullscreen = (e: React.MouseEvent) => {
+  const toggleFullscreen = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const video = videoRef.current as HTMLVideoElement & {
-      webkitEnterFullscreen?: () => void;
-    };
-    if (!video) return;
-
-    if (video.webkitEnterFullscreen) {
-      video.webkitEnterFullscreen();
-    } else if (containerRef.current?.requestFullscreen) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        containerRef.current.requestFullscreen();
-      }
+    if (!isExpanded && inlinePlaceholderRef.current) {
+      setInlineHeight(inlinePlaceholderRef.current.offsetHeight);
     }
+    setIsExpanded((prev) => !prev);
+    scheduleHideControls();
   };
 
   const handleTimeUpdate = () => {
@@ -194,132 +207,178 @@ export default function EditorialVideoPlayer({ src, title }: EditorialVideoPlaye
 
   return (
     <div
-      ref={containerRef}
-      onClick={togglePlay}
-      onMouseMove={scheduleHideControls}
-      onTouchStart={scheduleHideControls}
-      className="relative w-full bg-[#0F0F0F] overflow-hidden cursor-pointer group select-none"
+      ref={inlinePlaceholderRef}
+      style={isExpanded && inlineHeight ? { height: `${inlineHeight}px` } : undefined}
+      className="w-full"
     >
-      <video
-        ref={videoRef}
-        src={blobSrc || src}
-        playsInline
-        muted={isMuted}
-        loop
-        preload="auto"
-        onLoadedMetadata={(e) => {
-          const d = e.currentTarget.duration;
-          if (d && !isNaN(d)) setDuration(d);
-        }}
-        onTimeUpdate={handleTimeUpdate}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => {
-          setIsPlaying(false);
-          setShowControls(true);
-        }}
-        onWaiting={() => setIsWaiting(true)}
-        onPlaying={() => setIsWaiting(false)}
-        onCanPlay={() => setIsWaiting(false)}
-        className="w-full h-auto block"
-      />
-
-      {/* Top Subtle Status / Preload Indicator */}
-      {!isFullyBuffered && preloadPercent > 0 && preloadPercent < 100 && (
-        <div className="absolute top-3 right-3 z-20 bg-black/55 backdrop-blur-md border border-white/15 px-2.5 py-1 text-[9px] tracking-[0.2em] uppercase text-white/90 flex items-center gap-1.5 pointer-events-none">
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-          <span>HD {preloadPercent}%</span>
-        </div>
-      )}
-
-      {/* Center Play / Buffering Glassmorphic Button */}
+      {/* Outer wrapper: either inline or floating lightbox modal with blurred background (matching photo lightbox) */}
       <div
-        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 pointer-events-none ${
-          !isPlaying || isWaiting ? 'opacity-100' : 'opacity-0'
-        }`}
+        onClick={isExpanded ? () => setIsExpanded(false) : undefined}
+        className={
+          isExpanded
+            ? 'fixed inset-0 z-50 bg-black/45 backdrop-blur-xl flex items-center justify-center p-2 sm:p-6 animate-subtle-fade'
+            : 'w-full'
+        }
       >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/40 backdrop-blur-md border border-white/35 flex items-center justify-center text-white shadow-2xl transition-transform duration-300 group-hover:scale-105">
-          {isWaiting ? (
-            <Loader2 className="w-6 h-6 sm:w-7 sm:h-7 animate-spin text-white" />
-          ) : (
-            <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-white translate-x-0.5" />
-          )}
-        </div>
-      </div>
+        {/* Top-Right Close Button in Fullscreen Lightbox Mode (matches photo lightbox) */}
+        {isExpanded && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(false);
+            }}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 w-10 h-10 bg-white/80 backdrop-blur-md text-[#111111] flex items-center justify-center hover:bg-white transition-colors"
+            aria-label="Close fullscreen"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
-      {/* Bottom Editorial Control Bar */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={`absolute inset-x-0 bottom-0 pt-10 pb-3.5 px-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
-          showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Interactive Scrubber / Buffer Bar */}
+        {/* Video Player Frame */}
         <div
-          onClick={handleSeek}
-          className="w-full py-2 cursor-pointer group/bar"
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlay();
+          }}
+          onMouseMove={scheduleHideControls}
+          onTouchStart={scheduleHideControls}
+          className={
+            isExpanded
+              ? 'relative w-fit h-fit max-h-[90vh] max-w-[90vw] bg-[#0F0F0F] shadow-2xl overflow-hidden cursor-pointer group select-none flex items-center justify-center'
+              : 'relative w-full bg-[#0F0F0F] overflow-hidden cursor-pointer group select-none'
+          }
         >
-          <div className="relative w-full h-[3px] group-hover/bar:h-[5px] bg-white/20 overflow-hidden transition-all">
-            {/* Buffered Progress */}
-            <div
-              className="absolute inset-y-0 left-0 bg-white/40 transition-all duration-300"
-              style={{ width: `${bufferedPercent}%` }}
-            />
-            {/* Current Playback Progress */}
-            <div
-              className="absolute inset-y-0 left-0 bg-white transition-all duration-75"
-              style={{ width: `${playProgressPercent}%` }}
-            />
-          </div>
-        </div>
+          <video
+            ref={videoRef}
+            src={blobSrc || src}
+            playsInline
+            muted={isMuted}
+            loop
+            preload="auto"
+            onLoadedMetadata={(e) => {
+              const d = e.currentTarget.duration;
+              if (d && !isNaN(d)) setDuration(d);
+            }}
+            onTimeUpdate={handleTimeUpdate}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => {
+              setIsPlaying(false);
+              setShowControls(true);
+            }}
+            onWaiting={() => setIsWaiting(true)}
+            onPlaying={() => setIsWaiting(false)}
+            onCanPlay={() => setIsWaiting(false)}
+            className={
+              isExpanded
+                ? 'max-h-[90vh] max-w-[90vw] w-auto h-auto object-contain block'
+                : 'w-full h-auto block'
+            }
+          />
 
-        {/* Controls Row */}
-        <div className="flex items-center justify-between text-white mt-1">
-          <div className="flex items-center gap-3.5">
-            <button
-              type="button"
-              onClick={togglePlay}
-              className="text-white hover:opacity-75 transition-opacity p-1"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? (
-                <Pause className="w-4 h-4 fill-white" />
+          {/* Top Subtle Status / Preload Indicator */}
+          {!isFullyBuffered && preloadPercent > 0 && preloadPercent < 100 && (
+            <div className="absolute top-3 right-3 z-20 bg-black/55 backdrop-blur-md border border-white/15 px-2.5 py-1 text-[9px] tracking-[0.2em] uppercase text-white/90 flex items-center gap-1.5 pointer-events-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span>HD {preloadPercent}%</span>
+            </div>
+          )}
+
+          {/* Center Play / Buffering Glassmorphic Button */}
+          <div
+            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 pointer-events-none ${
+              !isPlaying || isWaiting ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/40 backdrop-blur-md border border-white/35 flex items-center justify-center text-white shadow-2xl transition-transform duration-300 group-hover:scale-105">
+              {isWaiting ? (
+                <Loader2 className="w-6 h-6 sm:w-7 sm:h-7 animate-spin text-white" />
               ) : (
-                <Play className="w-4 h-4 fill-white" />
+                <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-white translate-x-0.5" />
               )}
-            </button>
-
-            <button
-              type="button"
-              onClick={toggleMute}
-              className="text-white hover:opacity-75 transition-opacity p-1"
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-
-            <span className="text-[10px] tracking-[0.18em] font-mono text-white/85">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {title && (
-              <span className="hidden sm:inline text-[9px] tracking-[0.2em] uppercase text-white/60 truncate max-w-[180px]">
-                {title}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={handleFullscreen}
-              className="text-white hover:opacity-75 transition-opacity p-1"
-              aria-label="Fullscreen"
+          {/* Bottom Editorial Control Bar */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`absolute inset-x-0 bottom-0 pt-10 pb-3.5 px-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
+              showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            {/* Interactive Scrubber / Buffer Bar */}
+            <div
+              onClick={handleSeek}
+              className="w-full py-2 cursor-pointer group/bar"
             >
-              <Maximize className="w-3.5 h-3.5" />
-            </button>
+              <div className="relative w-full h-[3px] group-hover/bar:h-[5px] bg-white/20 overflow-hidden transition-all">
+                {/* Buffered Progress */}
+                <div
+                  className="absolute inset-y-0 left-0 bg-white/40 transition-all duration-300"
+                  style={{ width: `${bufferedPercent}%` }}
+                />
+                {/* Current Playback Progress */}
+                <div
+                  className="absolute inset-y-0 left-0 bg-white transition-all duration-75"
+                  style={{ width: `${playProgressPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Controls Row */}
+            <div className="flex items-center justify-between text-white mt-1 gap-4">
+              <div className="flex items-center gap-3.5">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  className="text-white hover:opacity-75 transition-opacity p-1"
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-4 h-4 fill-white" />
+                  ) : (
+                    <Play className="w-4 h-4 fill-white" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="text-white hover:opacity-75 transition-opacity p-1"
+                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+
+                <span className="text-[10px] tracking-[0.18em] font-mono text-white/85 whitespace-nowrap">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {title && (
+                  <span className="hidden sm:inline text-[9px] tracking-[0.2em] uppercase text-white/60 truncate max-w-[160px]">
+                    {title}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={toggleFullscreen}
+                  className="text-white hover:opacity-75 transition-opacity p-1"
+                  aria-label={isExpanded ? 'Exit fullscreen' : 'Fullscreen'}
+                >
+                  {isExpanded ? (
+                    <Minimize2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <Maximize className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

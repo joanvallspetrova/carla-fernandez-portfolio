@@ -71,7 +71,7 @@ export async function generateCompCardPdf(
   const pageW = 297;
   const pageH = 210;
   const margin = 12;
-  const footerH = 30;
+  const footerH = 32;
   const contentH = pageH - margin * 2 - footerH;
 
   // Background pure gallery white
@@ -142,18 +142,34 @@ export async function generateCompCardPdf(
   }
 
   // Footer Divider Line
-  const footerY = margin + contentH + 7;
+  const footerY = margin + contentH + 6;
   doc.setDrawColor(230, 230, 230);
   doc.setLineWidth(0.25);
   doc.line(margin, footerY, pageW - margin, footerY);
 
-  // Model Name in Editorial Serif (Times/Serif built-in for clean vector rendering)
+  // Upper Footer Row — Left: Model Name in Editorial Serif
   doc.setFont('times', 'normal');
   doc.setTextColor(17, 17, 17);
-  doc.setFontSize(21);
+  doc.setFontSize(20);
   doc.text(data.profile.name.toUpperCase(), margin, footerY + 10);
 
-  // Stats Row in Minimalist Sans-Serif (Helvetica)
+  // Upper Footer Row — Right: Contact Info (stacked cleanly beside the name, well above the stats row)
+  const contactRightX = pageW - margin;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text(data.profile.contact.email, contactRightX, footerY + 6.5, { align: 'right' });
+
+  doc.setFontSize(8);
+  doc.setTextColor(95, 95, 95);
+  doc.text(
+    `${data.profile.contact.instagram}  ·  portfolio.carlafernandezoliva.com`,
+    contactRightX,
+    footerY + 11.5,
+    { align: 'right' }
+  );
+
+  // Lower Footer Row — Full-Width Stats Row in Minimalist Sans-Serif (Helvetica)
   const s = data.profile.stats;
   const labels =
     lang === 'es'
@@ -176,29 +192,20 @@ export async function generateCompCardPdf(
           ['SHOE', s.shoe],
           ['DRESS', s.dress],
           ['HAIR', s.hair.en],
-          ['EYES', s.eyes.en],
+          ['OJOS' in s ? 'EYES' : 'EYES', s.eyes.en],
           ['BASE', s.base],
         ];
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
+  let statsFontSize = 7.8;
+  doc.setFontSize(statsFontSize);
   const statsText = labels.map(([k, v]) => `${k}: ${v.toUpperCase()}`).join('   |   ');
+  while (doc.getTextWidth(statsText) > usableW && statsFontSize > 6.2) {
+    statsFontSize -= 0.2;
+    doc.setFontSize(statsFontSize);
+  }
   doc.setTextColor(60, 60, 60);
-  doc.text(statsText, margin, footerY + 17.5);
-
-  // Right-aligned Contact Info
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(30, 30, 30);
-  const contactRightX = pageW - margin;
-  doc.text(data.profile.contact.email, contactRightX, footerY + 9.5, { align: 'right' });
-  doc.setTextColor(90, 90, 90);
-  doc.text(
-    `${data.profile.contact.instagram}  ·  portfolio.carlafernandezoliva.com`,
-    contactRightX,
-    footerY + 15.5,
-    { align: 'right' }
-  );
+  doc.text(statsText, margin, footerY + 19.5);
 
   doc.save('Carla-Fernandez-Oliva-CompCard.pdf');
 }
