@@ -42,11 +42,11 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
     visiblePhotos[0];
 
   const bookPhotos = visiblePhotos
-    .filter((p) => p.category === 'book')
+    .filter((p) => p.category === 'book' && p.id !== heroPhoto?.id)
     .sort((a, b) => a.order - b.order);
 
   const digitalPhotos = visiblePhotos
-    .filter((p) => p.category === 'digitals')
+    .filter((p) => p.category === 'digitals' && p.id !== heroPhoto?.id)
     .sort((a, b) => a.order - b.order);
 
   const handleDownloadCompCard = async () => {
@@ -249,7 +249,7 @@ export default function PortfolioView({ initialData }: PortfolioViewProps) {
           <div className="lg:col-span-7 w-full">
             {heroPhoto && (
               <div
-                onClick={() => openLightbox(bookPhotos, 0)}
+                onClick={() => openLightbox([heroPhoto, ...bookPhotos], 0)}
                 className="relative w-full overflow-hidden bg-[#FAFAFA] cursor-zoom-in"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
